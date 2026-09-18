@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/*
+ * Strict light mode: AMKI Jatim brand identity does not have a dark theme.
+ * Tying `dark:` to a class that is never applied (instead of the default
+ * `prefers-color-scheme` media query) neutralizes any `dark:` utility
+ * anyone writes later, regardless of OS/browser theme preference.
+ */
+@custom-variant dark (&:is(.force-dark, .force-dark *));
+
 /* AMKI Jatim brand tokens — derived from the AMKI logo (teal wing + amber flame). */
 :root {
   --background: #ffffff;
@@ -32,6 +40,10 @@
 
   --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.06), 0 1px 3px 0 rgb(15 23 42 / 0.1);
   --shadow-elevated: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 10px 15px -3px rgb(15 23 42 / 0.08);
+
+  /* Tells the browser chrome (form controls, scrollbars) to never render a
+     dark variant, even if the OS is set to dark mode. */
+  color-scheme: light only;
 }
 
 @theme inline {
@@ -60,15 +72,8 @@
   --color-text-muted: var(--color-text-muted);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }

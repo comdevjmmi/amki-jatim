@@ -1,33 +1,38 @@
-export default function Home() {
+import { CtaBanner } from "@/components/landing/cta-banner";
+import { Footer } from "@/components/landing/footer";
+import { Hero } from "@/components/landing/hero";
+import { Navbar } from "@/components/landing/navbar";
+import { Profil } from "@/components/landing/profil";
+import { RundownTabs } from "@/components/landing/rundown-tabs";
+import { getVotingSettings } from "@/lib/data/voting-settings";
+
+export default async function Home() {
+  const { isVotingVisible } = await getVotingSettings();
+
   return (
-    <div className="flex flex-col flex-1 bg-zinc-50 font-sans dark:bg-black">
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-6 px-6 py-24 text-center">
-        <p className="text-sm font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-          Rapat Kerja Wilayah
-        </p>
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-black dark:text-zinc-50 sm:text-5xl">
-          AMKI Wilayah Jawa Timur
-        </h1>
-        <p className="max-w-xl text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-          Registrasi peserta &amp; delegasi Masjid Kampus, serta E-Voting
-          Pemilihan Ketua AMKI Jawa Timur. Rundown, tema, dan detail acara
-          akan tampil di halaman ini.
-        </p>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full bg-foreground px-6 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] sm:w-auto"
-            href="/registrasi"
-          >
-            Daftar Peserta
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-6 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] sm:w-auto"
-            href="/rundown"
-          >
-            Lihat Rundown
-          </a>
-        </div>
+    <div className="flex flex-1 flex-col">
+      <Navbar isVotingVisible={isVotingVisible} />
+
+      <main className="flex-1">
+        <Hero />
+
+        <section id="rundown" className="px-6 py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-medium uppercase tracking-widest text-primary-600">
+              Agenda
+            </p>
+            <h2 className="mt-2 text-3xl font-bold text-text">Rundown Acara</h2>
+          </div>
+          <div className="mt-10">
+            <RundownTabs />
+          </div>
+        </section>
+
+        <Profil />
+        <CtaBanner />
       </main>
+
+      <Footer />
     </div>
   );
 }
