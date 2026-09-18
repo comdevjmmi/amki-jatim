@@ -22,6 +22,15 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               <Link href="/admin/sessions" className="hover:text-primary-700">
                 Sesi Presensi
               </Link>
+              <Link href="/admin/candidates" className="hover:text-primary-700">
+                Kandidat
+              </Link>
+              <Link href="/admin/tokens" className="hover:text-primary-700">
+                Token Pemilih
+              </Link>
+              <Link href="/admin/voting-control" className="hover:text-primary-700">
+                Kontrol Voting
+              </Link>
             </nav>
           </div>
           <form action={logoutAdmin}>

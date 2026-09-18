@@ -312,6 +312,48 @@ $$;
 revoke all on function set_active_session(uuid) from public;
 grant execute on function set_active_session(uuid) to service_role;
 
+-- Mencoblos secara atomik: klaim token (is_used false -> true) dan insert
+-- suara dalam satu function call/transaksi, supaya token yang sama tidak
+-- bisa dipakai dua kali walau dua request datang nyaris bersamaan — baris
+-- voting_tokens terkunci oleh UPDATE ... WHERE is_used = false, jadi hanya
+-- satu pemanggil yang berhasil mengklaimnya. p_token_hash dihitung di server
+-- (HMAC dengan VOTE_TOKEN_SECRET) sebelum RPC ini dipanggil — token mentah
+-- tidak pernah dikirim ke database.
+create or replace function cast_vote(p_token_hash text, p_candidate_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_token voting_tokens;
+  v_is_open boolean;
+begin
+  select is_voting_open into v_is_open from voting_settings where id = 1;
+  if v_is_open is not true then
+    raise exception 'VOTING_CLOSED';
+  end if;
+
+  if not exists (select 1 from candidates where id = p_candidate_id) then
+    raise exception 'INVALID_CANDIDATE';
+  end if;
+
+  update voting_tokens
+    set is_used = true, used_at = now()
+    where token_hash = p_token_hash and is_used = false
+    returning * into v_token;
+
+  if v_token.id is null then
+    raise exception 'INVALID_OR_USED_TOKEN';
+  end if;
+
+  insert into votes (candidate_id, voting_token_id) values (p_candidate_id, v_token.id);
+end;
+$$;
+
+revoke all on function cast_vote(text, uuid) from public;
+grant execute on function cast_vote(text, uuid) to service_role;
+
 -- Semua operasi admin lain (approve/reject peserta, generate token, CRUD
 -- kandidat, kelola sesi & presensi, toggle voting) dilakukan lewat server
 -- actions dengan service role key, yang bypass RLS.

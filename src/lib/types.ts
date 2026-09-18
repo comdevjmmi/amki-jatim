@@ -14,3 +14,13 @@ export interface InvitedGuestOption {
   campusName: string;
   title: string;
 }
+
+export interface Candidate {
+  id: string;
+  nama: string;
+  asal_kampus: string | null;
+  nomor_urut: number | null;
+  foto_url: string | null;
+  visi_misi: string | null;
+  updated_at: string;
+}
