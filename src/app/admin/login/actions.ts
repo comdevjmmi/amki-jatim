@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_SESSION_COOKIE, createAdminSessionToken } from "@/lib/admin-auth";
+import { ADMIN_SESSION_COOKIE, createAdminSessionToken, verifyAdminPassword } from "@/lib/admin-auth";
 
 export interface LoginState {
   status: "idle" | "error";
@@ -15,7 +15,7 @@ export async function loginAdmin(_prevState: LoginState, formData: FormData): Pr
   if (typeof password !== "string" || password.length === 0) {
     return { status: "error", message: "Password wajib diisi." };
   }
-  if (password !== process.env.ADMIN_PASSWORD) {
+  if (!(await verifyAdminPassword(password))) {
     return { status: "error", message: "Password salah." };
   }
 

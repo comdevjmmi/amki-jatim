@@ -296,6 +296,22 @@ $$;
 revoke all on function register_participant(text, uuid, text, text, text, text, text, text, text) from public;
 grant execute on function register_participant(text, uuid, text, text, text, text, text, text, text) to service_role;
 
+-- Mengaktifkan satu sesi presensi sekaligus menonaktifkan semua sesi lain,
+-- dalam satu statement UPDATE (jadi satu transaksi atomik) — supaya dua
+-- admin yang mengklik "Aktifkan" pada dua sesi berbeda hampir bersamaan
+-- tidak bisa membuat dua sesi aktif sekaligus.
+create or replace function set_active_session(p_session_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update event_sessions set is_active = (id = p_session_id);
+$$;
+
+revoke all on function set_active_session(uuid) from public;
+grant execute on function set_active_session(uuid) to service_role;
+
 -- Semua operasi admin lain (approve/reject peserta, generate token, CRUD
 -- kandidat, kelola sesi & presensi, toggle voting) dilakukan lewat server
 -- actions dengan service role key, yang bypass RLS.

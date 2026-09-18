@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_SESSION_COOKIE } from "@/lib/admin-auth";
+import { ADMIN_SESSION_COOKIE, requireAdminSession } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export async function updateParticipantStatus(formData: FormData) {
+  await requireAdminSession();
+
   const id = formData.get("id");
   const status = formData.get("status");
 
