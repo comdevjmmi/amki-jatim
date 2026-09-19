@@ -7,9 +7,10 @@ import type { Candidate } from "@/lib/types";
 
 type Step = "token" | "ballot" | "success";
 
-export function VotingBooth({ candidates }: { candidates: Candidate[] }) {
-  const [step, setStep] = useState<Step>("token");
-  const [token, setToken] = useState("");
+export function VotingBooth({ candidates, initialToken }: { candidates: Candidate[]; initialToken?: string }) {
+  const validInitialToken = initialToken && initialToken.trim().length >= 6 ? initialToken.trim() : "";
+  const [step, setStep] = useState<Step>(validInitialToken ? "ballot" : "token");
+  const [token, setToken] = useState(validInitialToken);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState<Candidate | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

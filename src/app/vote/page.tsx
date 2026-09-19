@@ -8,7 +8,12 @@ export const metadata = {
   title: "Bilik E-Voting — Rakerwil AMKI Jawa Timur",
 };
 
-export default async function VotePage() {
+export default async function VotePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const { token } = await searchParams;
   const { isVotingVisible, isVotingOpen } = await getVotingSettings();
 
   if (!isVotingVisible || !isVotingOpen) {
@@ -43,11 +48,14 @@ export default async function VotePage() {
           Bilik E-Voting Ketua AMKI Jawa Timur
         </h1>
         <p className="mt-2 text-sm text-text-muted">
-          Masukkan token voting Anda, lalu pilih satu kandidat.
+          Masukkan token voting Anda, lalu pilih satu kandidat.{" "}
+          <Link href="/cek-token" className="font-medium text-primary-700 hover:underline">
+            Lupa/belum punya token? Cek di sini.
+          </Link>
         </p>
 
         <div className="mt-8">
-          <VotingBooth candidates={data ?? []} />
+          <VotingBooth candidates={data ?? []} initialToken={token} />
         </div>
       </div>
     </div>

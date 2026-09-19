@@ -36,6 +36,9 @@ export function Navbar({ isVotingVisible }: { isVotingVisible: boolean }) {
               <Link href="/vote" className="text-label-lg text-stitch-on-surface-variant transition-colors hover:text-stitch-primary">
                 Bilik Suara
               </Link>
+              <Link href="/cek-token" className="text-label-lg text-stitch-on-surface-variant transition-colors hover:text-stitch-primary">
+                Cek Token
+              </Link>
               <Link href="/voting/live" className="text-label-lg text-stitch-on-surface-variant transition-colors hover:text-stitch-primary">
                 Live Count
               </Link>
