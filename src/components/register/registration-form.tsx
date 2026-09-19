@@ -4,7 +4,7 @@ import { useActionState, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { registerParticipant, type RegisterState } from "@/app/register/actions";
 import { InvitedGuestCombobox } from "./invited-guest-combobox";
-import type { InvitedGuestOption, ParticipantKategori, RegistrationType } from "@/lib/types";
+import type { InvitedGuestOption, RegistrationType } from "@/lib/types";
 
 const INITIAL_STATE: RegisterState = { status: "idle" };
 
@@ -12,7 +12,6 @@ export function RegistrationForm() {
   const [state, formAction, isPending] = useActionState(registerParticipant, INITIAL_STATE);
   const [registrationType, setRegistrationType] = useState<RegistrationType>("invited");
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
-  const [kategori, setKategori] = useState<ParticipantKategori>("peserta_penuh");
 
   if (state.status === "success") {
     return (
@@ -43,7 +42,6 @@ export function RegistrationForm() {
       className="flex flex-col gap-8 rounded-lg border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
     >
       <input type="hidden" name="registrationType" value={registrationType} />
-      <input type="hidden" name="kategori" value={kategori} />
       {registrationType === "invited" && (
         <input type="hidden" name="invitedGuestId" value={selectedGuest?.id ?? ""} />
       )}
@@ -71,7 +69,11 @@ export function RegistrationForm() {
           <label className="mb-2 block text-sm font-semibold text-text">
             Cari Nama Anda
           </label>
-          <InvitedGuestCombobox selected={selectedGuest} onSelect={setSelectedGuest} />
+          <InvitedGuestCombobox
+            selected={selectedGuest}
+            onSelect={setSelectedGuest}
+            onNotFound={() => setRegistrationType("representative")}
+          />
           <p className="mt-2 text-xs text-text-muted">
             Nama, jabatan, dan asal kampus akan otomatis terisi sesuai data
             panitia.
@@ -89,28 +91,6 @@ export function RegistrationForm() {
       <section className="grid gap-4 sm:grid-cols-2">
         <Field label="Email" name="email" type="email" required />
         <Field label="Nomor WhatsApp" name="noHp" type="tel" required />
-      </section>
-
-      <section>
-        <p className="mb-2 text-sm font-semibold text-text">Kategori Peserta</p>
-        <div className="flex rounded-full border border-border p-1">
-          <TypeToggleButton
-            active={kategori === "peserta_penuh"}
-            onClick={() => setKategori("peserta_penuh")}
-          >
-            Peserta Penuh (Hak Suara)
-          </TypeToggleButton>
-          <TypeToggleButton
-            active={kategori === "peninjau"}
-            onClick={() => setKategori("peninjau")}
-          >
-            Peserta Peninjau
-          </TypeToggleButton>
-        </div>
-        <p className="mt-2 text-xs text-text-muted">
-          Peserta Penuh berhak mengikuti pemilihan Ketua AMKI Jawa Timur.
-          Peserta Peninjau mengikuti seluruh agenda tanpa hak suara.
-        </p>
       </section>
 
       {state.status === "error" && (

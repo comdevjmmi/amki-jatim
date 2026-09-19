@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
-import type { ParticipantKategori, RegistrationType } from "@/lib/types";
+import type { RegistrationType } from "@/lib/types";
 
 export interface RegisterState {
   status: "idle" | "success" | "error";
@@ -16,7 +16,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   CAMPUS_REQUIRED: "Nama Masjid Kampus wajib diisi.",
   EMAIL_REQUIRED: "Email wajib diisi.",
   NO_HP_REQUIRED: "Nomor WhatsApp wajib diisi.",
-  INVALID_KATEGORI: "Kategori peserta tidak valid.",
   INVALID_REGISTRATION_TYPE: "Tipe registrasi tidak valid.",
 };
 
@@ -32,17 +31,16 @@ export async function registerParticipant(
   formData: FormData,
 ): Promise<RegisterState> {
   const registrationType = readField(formData, "registrationType") as RegistrationType | null;
-  const kategori = readField(formData, "kategori") as ParticipantKategori | null;
 
   if (registrationType !== "invited" && registrationType !== "representative") {
     return { status: "error", message: ERROR_MESSAGES.INVALID_REGISTRATION_TYPE };
   }
-  if (kategori !== "peserta_penuh" && kategori !== "peninjau") {
-    return { status: "error", message: ERROR_MESSAGES.INVALID_KATEGORI };
-  }
 
   const supabase = createAdminClient();
 
+  // Kategori is no longer a self-service choice — every registrant starts as
+  // peserta_penuh and panitia curates the real category (incl. downgrading
+  // to peninjau) when approving in /admin.
   const { error } = await supabase.rpc("register_participant", {
     p_registration_type: registrationType,
     p_invited_guest_id: registrationType === "invited" ? readField(formData, "invitedGuestId") : null,
@@ -50,7 +48,7 @@ export async function registerParticipant(
     p_email: readField(formData, "email"),
     p_no_hp: readField(formData, "noHp"),
     p_jabatan: readField(formData, "jabatan"),
-    p_kategori: kategori,
+    p_kategori: "peserta_penuh",
     p_kampus_nama: readField(formData, "kampusNama"),
     p_kampus_kota: readField(formData, "kampusKota"),
   });

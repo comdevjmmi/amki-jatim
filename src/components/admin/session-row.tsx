@@ -124,6 +124,13 @@ export function SessionRow({ session }: { session: SessionRowData }) {
           >
             Presensi
           </Link>
+          <Link
+            href={`/admin/sessions/${session.id}/screen`}
+            target="_blank"
+            className="rounded-full border border-primary-500 px-3 py-1 text-xs font-semibold text-primary-700 hover:bg-primary-50"
+          >
+            Layar QR Proyektor
+          </Link>
           <button
             type="button"
             onClick={() => setIsEditing(true)}

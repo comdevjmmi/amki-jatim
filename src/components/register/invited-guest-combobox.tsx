@@ -7,9 +7,10 @@ import type { InvitedGuestOption } from "@/lib/types";
 interface Props {
   selected: InvitedGuestOption | null;
   onSelect: (guest: InvitedGuestOption | null) => void;
+  onNotFound: () => void;
 }
 
-export function InvitedGuestCombobox({ selected, onSelect }: Props) {
+export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<InvitedGuestOption[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -114,10 +115,21 @@ export function InvitedGuestCombobox({ selected, onSelect }: Props) {
           )}
 
           {!isSearching && results.length === 0 && (
-            <p className="px-4 py-3 text-sm text-text-muted">
-              Nama tidak ditemukan. Jika Anda perwakilan/delegasi baru, pilih
-              opsi &quot;Perwakilan / Delegasi Baru&quot; di atas.
-            </p>
+            <div className="px-4 py-3">
+              <p className="text-sm text-text-muted">
+                Nama tidak ditemukan di daftar tamu undangan.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onNotFound();
+                }}
+                className="mt-2 text-sm font-medium text-primary-700 hover:underline"
+              >
+                Daftar sebagai Perwakilan / Delegasi Baru &rarr;
+              </button>
+            </div>
           )}
 
           {!isSearching &&
