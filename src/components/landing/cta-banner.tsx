@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "@/components/ui/motion";
 import { Icon } from "./icon";
 
 export function CtaBanner() {
@@ -21,13 +24,15 @@ export function CtaBanner() {
               <span className="font-bold underline decoration-white/50">20 Oktober 2026</span> untuk
               alokasi akomodasi dan hak suara komisi.
             </p>
-            <Link
-              href="/register"
-              className="flex items-center gap-2 rounded-full bg-stitch-surface-container-lowest px-10 py-4 text-headline-sm font-bold text-stitch-secondary shadow-xl transition-all duration-200 hover:scale-105 hover:bg-stitch-surface-container-low"
-            >
-              <span>Daftar Sekarang</span>
-              <Icon name="how_to_reg" className="text-[20px]" />
-            </Link>
+            <motion.div whileTap={{ scale: 0.97 }}>
+              <Link
+                href="/register"
+                className="flex items-center gap-2 rounded-full bg-stitch-surface-container-lowest px-10 py-4 text-headline-sm font-bold text-stitch-secondary shadow-xl transition-all duration-200 hover:scale-105 hover:bg-stitch-surface-container-low"
+              >
+                <span>Daftar Sekarang</span>
+                <Icon name="how_to_reg" className="text-[20px]" />
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>

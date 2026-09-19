@@ -1,4 +1,7 @@
+"use client";
+
 import type { LandingStats } from "@/lib/data/landing-stats";
+import { AnimatedCounter } from "@/components/ui/motion";
 
 export function Stats({ participantCount, masjidKampusCount, kotaCount }: LandingStats) {
   const items = [
@@ -15,7 +18,7 @@ export function Stats({ participantCount, masjidKampusCount, kotaCount }: Landin
           {items.map((item) => (
             <div key={item.label} className="flex flex-col items-center">
               <span className="mb-1 text-display font-extrabold tracking-tight text-stitch-secondary-fixed">
-                {item.value}
+                <AnimatedCounter value={item.value} />
               </span>
               <span className="text-headline-sm font-semibold text-stitch-inverse-on-surface">
                 {item.label}

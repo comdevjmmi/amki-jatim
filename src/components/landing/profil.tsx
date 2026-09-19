@@ -1,4 +1,13 @@
+"use client";
+
+import { motion } from "@/components/ui/motion";
+import type { Variants } from "framer-motion";
 import { Icon } from "./icon";
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 const CARDS = [
   {
@@ -43,9 +52,14 @@ export function Profil() {
 
         <div className="grid grid-cols-1 gap-space-lg md:grid-cols-3">
           {CARDS.map((card) => (
-            <div
+            <motion.div
               key={card.title}
-              className="flex flex-col justify-between rounded-xl bg-stitch-surface-container-lowest p-space-xl shadow-sm transition-all duration-300 hover:shadow-lg"
+              variants={cardVariants}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              whileHover={{ y: -6 }}
+              className="flex flex-col justify-between rounded-xl bg-stitch-surface-container-lowest p-space-xl shadow-sm transition-shadow duration-300 hover:shadow-lg"
             >
               <div>
                 <div className="mb-space-lg flex h-14 w-14 items-center justify-center rounded-full bg-stitch-primary/10 text-stitch-primary">
@@ -62,7 +76,7 @@ export function Profil() {
                 <span>{card.tag}</span>
                 <Icon name="chevron_right" className="text-[16px]" />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
