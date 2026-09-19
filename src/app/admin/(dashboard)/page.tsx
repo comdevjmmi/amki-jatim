@@ -48,10 +48,20 @@ export default async function AdminParticipantsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-text">Peserta Masuk</h1>
-      <p className="mt-1 text-sm text-text-muted">
-        {participants.length} peserta {filter !== "all" && `(status: ${filter})`}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text">Peserta Masuk</h1>
+          <p className="mt-1 text-sm text-text-muted">
+            {participants.length} peserta {filter !== "all" && `(status: ${filter})`}
+          </p>
+        </div>
+        <a
+          href="/admin/export/participants"
+          className="rounded-full border border-primary-500 px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-50"
+        >
+          Export Data Peserta (CSV)
+        </a>
+      </div>
 
       <div className="mt-6 flex gap-1 rounded-full border border-border p-1 w-fit">
         {FILTERS.map((f) => (

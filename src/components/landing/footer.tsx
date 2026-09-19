@@ -30,11 +30,15 @@ export function Footer() {
             </p>
             <p className="flex items-center gap-space-xs">
               <Icon name="call" className="text-[16px] text-stitch-tertiary-fixed-dim" />
-              WhatsApp Center AMKI Jatim
+              Dr. Kukuh Santoso, M.Pd — 0815-5653-4247
+            </p>
+            <p className="flex items-center gap-space-xs">
+              <Icon name="call" className="text-[16px] text-stitch-tertiary-fixed-dim" />
+              Naufal Mahdy Nashrullah — 0813-3597-1429
             </p>
             <p className="flex items-start gap-space-xs">
               <Icon name="location_on" className="mt-0.5 text-[16px] text-stitch-tertiary-fixed-dim" />
-              Sekretariat Kampus Jawa Timur
+              Universitas Islam Darul Ulum (UNISDA) Lamongan
             </p>
           </div>
         </div>

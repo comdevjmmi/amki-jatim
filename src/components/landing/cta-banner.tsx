@@ -17,8 +17,9 @@ export function CtaBanner() {
               Belum daftar sebagai delegasi?
             </h2>
             <p className="mb-space-xl max-w-lg text-body-lg leading-relaxed text-white/95">
-              Pastikan delegasi takmir masjid kampus Anda terdaftar resmi sebelum batas waktu yang
-              ditentukan panitia, untuk alokasi akomodasi dan hak suara komisi.
+              Pastikan delegasi takmir masjid kampus Anda terdaftar resmi sebelum batas akhir{" "}
+              <span className="font-bold underline decoration-white/50">20 Oktober 2026</span> untuk
+              alokasi akomodasi dan hak suara komisi.
             </p>
             <Link
               href="/register"

@@ -58,18 +58,28 @@ export default async function SessionAttendancePage({
 
   return (
     <div>
-      <Link href="/admin/sessions" className="text-sm text-text-muted hover:text-primary-700">
-        &larr; Sesi
-      </Link>
-      <h1 className="mt-2 text-2xl font-bold text-text">Presensi: {session.title}</h1>
-      <p className="mt-1 flex items-center gap-2 text-sm text-text-muted">
-        {checkedInCount} / {participants.length} peserta approved sudah check-in
-        {session.is_active && (
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-            Sesi Aktif
-          </span>
-        )}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <Link href="/admin/sessions" className="text-sm text-text-muted hover:text-primary-700">
+            &larr; Sesi
+          </Link>
+          <h1 className="mt-2 text-2xl font-bold text-text">Presensi: {session.title}</h1>
+          <p className="mt-1 flex items-center gap-2 text-sm text-text-muted">
+            {checkedInCount} / {participants.length} peserta approved sudah check-in
+            {session.is_active && (
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                Sesi Aktif
+              </span>
+            )}
+          </p>
+        </div>
+        <a
+          href={`/admin/sessions/${session.id}/attendance/export`}
+          className="rounded-full border border-primary-500 px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-50"
+        >
+          Export Presensi (CSV)
+        </a>
+      </div>
 
       {error && (
         <p className="mt-6 rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-700">

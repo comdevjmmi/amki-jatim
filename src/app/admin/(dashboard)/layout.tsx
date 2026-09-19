@@ -31,6 +31,9 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               <Link href="/admin/voting-control" className="hover:text-primary-700">
                 Kontrol Voting
               </Link>
+              <Link href="/admin/berita-acara" className="hover:text-primary-700">
+                Berita Acara
+              </Link>
             </nav>
           </div>
           <form action={logoutAdmin}>

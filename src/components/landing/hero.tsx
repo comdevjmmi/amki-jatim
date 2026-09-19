@@ -2,13 +2,11 @@ import Link from "next/link";
 import { Countdown } from "./countdown";
 import { Icon } from "./icon";
 
-// NOTE: the Stitch export hardcodes "24 - 26 Oktober 2025" for this event,
-// which conflicts with this existing target date. Kept the existing date
-// (used for the live countdown) rather than silently overwriting it with an
-// unconfirmed one from the design mockup — confirm with Bara/Ainin which is
-// correct and update both the countdown target and the label below together.
-const EVENT_DATE = "2026-11-14T08:00:00+07:00";
-const EVENT_DATE_LABEL = "14 November 2026";
+// Official date per the Surat Undangan & Rundown Rakerwil AMKI Jatim 2026.
+// No specific start time was given — 08:00 WIB assumed (typical registration
+// opening time); update here if the real invitation states otherwise.
+const EVENT_DATE = "2026-10-24T08:00:00+07:00";
+const EVENT_DATE_LABEL = "24 Oktober 2026";
 
 export function Hero() {
   return (
@@ -34,7 +32,7 @@ export function Hero() {
         <div className="mb-space-xl inline-flex flex-wrap items-center justify-center gap-x-space-md gap-y-2 rounded-full bg-stitch-surface-container-lowest/15 px-space-lg py-2.5 text-label-lg text-stitch-on-primary shadow-inner backdrop-blur-md">
           <div className="flex items-center gap-1.5">
             <Icon name="location_on" className="text-[18px] text-stitch-secondary-fixed" />
-            <span>Surabaya, Jawa Timur</span>
+            <span>Lamongan, Jawa Timur</span>
           </div>
           <span className="hidden text-white/40 sm:inline">&bull;</span>
           <div className="flex items-center gap-1.5">
@@ -44,7 +42,7 @@ export function Hero() {
           <span className="hidden text-white/40 sm:inline">&bull;</span>
           <div className="flex items-center gap-1.5">
             <Icon name="account_balance" className="text-[18px] text-stitch-secondary-fixed" />
-            <span>Gedung Riset &amp; Masjid Al-Hikmah</span>
+            <span>Universitas Islam Darul Ulum (UNISDA) Lamongan</span>
           </div>
         </div>
 
