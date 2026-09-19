@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
 import { createSession, toggleSessionActive } from "./actions";
 
@@ -107,18 +108,26 @@ export default async function AdminSessionsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <form action={toggleSessionActive}>
-                    <input type="hidden" name="id" value={s.id} />
-                    <input type="hidden" name="nextActive" value={(!s.is_active).toString()} />
-                    <button
-                      type="submit"
-                      className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${
-                        s.is_active ? "bg-rose-600 hover:bg-rose-700" : "bg-primary-500 hover:bg-primary-600"
-                      }`}
+                  <div className="flex gap-2">
+                    <form action={toggleSessionActive}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <input type="hidden" name="nextActive" value={(!s.is_active).toString()} />
+                      <button
+                        type="submit"
+                        className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                          s.is_active ? "bg-rose-600 hover:bg-rose-700" : "bg-primary-500 hover:bg-primary-600"
+                        }`}
+                      >
+                        {s.is_active ? "Nonaktifkan" : "Aktifkan"}
+                      </button>
+                    </form>
+                    <Link
+                      href={`/admin/sessions/${s.id}/attendance`}
+                      className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-muted hover:text-text"
                     >
-                      {s.is_active ? "Nonaktifkan" : "Aktifkan"}
-                    </button>
-                  </form>
+                      Presensi
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}

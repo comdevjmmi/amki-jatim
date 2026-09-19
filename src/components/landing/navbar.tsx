@@ -16,9 +16,14 @@ export function Navbar({ isVotingVisible }: { isVotingVisible: boolean }) {
             Profil
           </Link>
           {isVotingVisible && (
-            <Link href="/vote" className="hover:text-primary-700">
-              Bilik Suara
-            </Link>
+            <>
+              <Link href="/vote" className="hover:text-primary-700">
+                Bilik Suara
+              </Link>
+              <Link href="/voting/live" className="hover:text-primary-700">
+                Live Count
+              </Link>
+            </>
           )}
         </nav>
 

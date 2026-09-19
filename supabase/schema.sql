@@ -167,6 +167,19 @@ create policy "event sessions are public" on event_sessions
 create policy "masjid kampus is public" on masjid_kampus
   for select to anon using (true);
 
+-- votes has no participant_id/name (see cast_vote's comment above) — a row
+-- here is only { candidate_id, voting_token_id, created_at }, and
+-- voting_token_id is meaningless to anon since voting_tokens itself has no
+-- public policy. Public select is required for the Live Count screen's
+-- realtime subscription (Realtime authorizes postgres_changes per-row via
+-- this same RLS policy).
+create policy "votes are public" on votes
+  for select to anon using (true);
+
+-- Realtime broadcasts only for tables added to this publication.
+alter publication supabase_realtime add table votes;
+alter publication supabase_realtime add table voting_settings;
+
 -- invited_guests TIDAK diberi policy select langsung ke anon — data pribadi
 -- (contact, status klaim) tidak boleh dibaca bebas. Pencarian dari form
 -- registrasi memakai view invited_guests_public di bawah, yang hanya
@@ -306,7 +319,10 @@ language sql
 security definer
 set search_path = public
 as $$
-  update event_sessions set is_active = (id = p_session_id);
+  -- `where true` is required, not decorative: this project's live DB rejects
+  -- any UPDATE without a WHERE clause (safe-update guard), and this one is
+  -- intentionally whole-table.
+  update event_sessions set is_active = (id = p_session_id) where true;
 $$;
 
 revoke all on function set_active_session(uuid) from public;
