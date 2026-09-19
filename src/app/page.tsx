@@ -9,6 +9,11 @@ import { Stats } from "@/components/landing/stats";
 import { getLandingStats } from "@/lib/data/landing-stats";
 import { getVotingSettings } from "@/lib/data/voting-settings";
 
+// getLandingStats() reads live participant/masjid_kampus counts with the
+// service-role client — must never be statically prerendered, which would
+// bake in whatever counts existed at build time instead of real numbers.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const [{ isVotingVisible }, stats] = await Promise.all([getVotingSettings(), getLandingStats()]);
 
