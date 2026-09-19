@@ -44,6 +44,48 @@
   /* Tells the browser chrome (form controls, scrollbars) to never render a
      dark variant, even if the OS is set to dark mode. */
   color-scheme: light only;
+
+  /*
+   * Stitch landing page palette (docs/design/stitch_landing_page.md) — a
+   * Material 3 scheme, separate from the AMKI primary and accent tokens
+   * above. Prefixed stitch- so it does not collide with (or accidentally
+   * override) those tokens, which 20+ non-landing components already
+   * depend on. Scope: src/components/landing and src/app/page.tsx only.
+   */
+  --color-stitch-primary: #004a77;
+  --color-stitch-primary-container: #0b629b;
+  --color-stitch-on-primary: #ffffff;
+  --color-stitch-on-primary-container: #bcdbff;
+  --color-stitch-secondary: #904d00;
+  --color-stitch-secondary-container: #fe932c;
+  --color-stitch-on-secondary-container: #663500;
+  --color-stitch-secondary-fixed: #ffdcc3;
+  --color-stitch-tertiary: #004a73;
+  --color-stitch-tertiary-container: #006397;
+  --color-stitch-on-tertiary: #ffffff;
+  --color-stitch-tertiary-fixed-dim: #93ccff;
+  --color-stitch-surface: #faf8ff;
+  --color-stitch-on-surface: #131b2e;
+  --color-stitch-on-surface-variant: #414750;
+  --color-stitch-surface-variant: #dae2fd;
+  --color-stitch-surface-container: #eaedff;
+  --color-stitch-surface-container-low: #f2f3ff;
+  --color-stitch-surface-container-lowest: #ffffff;
+  --color-stitch-surface-container-high: #e2e7ff;
+  --color-stitch-inverse-surface: #283044;
+  --color-stitch-inverse-on-surface: #eef0ff;
+
+  /* Spacing scale from the Stitch export — names as-given, no collision
+     risk since no spacing tokens were previously registered. */
+  --spacing-margin: 2rem;
+  --spacing-margin-sm: 1rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-gutter-sm: 1rem;
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2.5rem;
 }
 
 @theme inline {
@@ -70,6 +112,90 @@
   --color-border: var(--color-border);
   --color-text: var(--color-text);
   --color-text-muted: var(--color-text-muted);
+
+  --color-stitch-primary: var(--color-stitch-primary);
+  --color-stitch-primary-container: var(--color-stitch-primary-container);
+  --color-stitch-on-primary: var(--color-stitch-on-primary);
+  --color-stitch-on-primary-container: var(--color-stitch-on-primary-container);
+  --color-stitch-secondary: var(--color-stitch-secondary);
+  --color-stitch-secondary-container: var(--color-stitch-secondary-container);
+  --color-stitch-on-secondary-container: var(--color-stitch-on-secondary-container);
+  --color-stitch-secondary-fixed: var(--color-stitch-secondary-fixed);
+  --color-stitch-tertiary: var(--color-stitch-tertiary);
+  --color-stitch-tertiary-container: var(--color-stitch-tertiary-container);
+  --color-stitch-on-tertiary: var(--color-stitch-on-tertiary);
+  --color-stitch-tertiary-fixed-dim: var(--color-stitch-tertiary-fixed-dim);
+  --color-stitch-surface: var(--color-stitch-surface);
+  --color-stitch-on-surface: var(--color-stitch-on-surface);
+  --color-stitch-on-surface-variant: var(--color-stitch-on-surface-variant);
+  --color-stitch-surface-variant: var(--color-stitch-surface-variant);
+  --color-stitch-surface-container: var(--color-stitch-surface-container);
+  --color-stitch-surface-container-low: var(--color-stitch-surface-container-low);
+  --color-stitch-surface-container-lowest: var(--color-stitch-surface-container-lowest);
+  --color-stitch-surface-container-high: var(--color-stitch-surface-container-high);
+  --color-stitch-inverse-surface: var(--color-stitch-inverse-surface);
+  --color-stitch-inverse-on-surface: var(--color-stitch-inverse-on-surface);
+
+  --spacing-margin: var(--spacing-margin);
+  --spacing-margin-sm: var(--spacing-margin-sm);
+  --spacing-gutter: var(--spacing-gutter);
+  --spacing-gutter-sm: var(--spacing-gutter-sm);
+  --spacing-space-xs: var(--spacing-space-xs);
+  --spacing-space-sm: var(--spacing-space-sm);
+  --spacing-space-md: var(--spacing-space-md);
+  --spacing-space-lg: var(--spacing-space-lg);
+  --spacing-space-xl: var(--spacing-space-xl);
+
+  /* Type scale (size/line-height/letter-spacing/weight tuples), ported
+     directly from the Stitch export fontSize config. The parallel
+     per-name font-* family utilities from that config are dropped —
+     every one of them pointed at the same single family (Plus Jakarta
+     Sans), applied once as the ambient font on the landing page wrapper
+     instead of per element. */
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 14px;
+  --text-label-sm--letter-spacing: 0.04em;
+  --text-label-sm--font-weight: 700;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.02em;
+  --text-label-md--font-weight: 600;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 20px;
+  --text-label-lg--letter-spacing: 0.01em;
+  --text-label-lg--font-weight: 600;
+  --text-title-md: 18px;
+  --text-title-md--line-height: 26px;
+  --text-title-md--font-weight: 600;
+  --text-headline-sm: 20px;
+  --text-headline-sm--line-height: 28px;
+  --text-headline-sm--font-weight: 600;
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 700;
+  --text-headline-lg-mobile: 28px;
+  --text-headline-lg-mobile--line-height: 36px;
+  --text-headline-lg-mobile--letter-spacing: -0.015em;
+  --text-headline-lg-mobile--font-weight: 700;
+  --text-headline-lg: 36px;
+  --text-headline-lg--line-height: 44px;
+  --text-headline-lg--letter-spacing: -0.015em;
+  --text-headline-lg--font-weight: 700;
+  --text-display-mobile: 34px;
+  --text-display-mobile--line-height: 42px;
+  --text-display-mobile--letter-spacing: -0.02em;
+  --text-display-mobile--font-weight: 800;
+  --text-display: 48px;
+  --text-display--line-height: 56px;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 800;
 }
 
 body {

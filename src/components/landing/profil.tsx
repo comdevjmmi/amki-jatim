@@ -1,56 +1,70 @@
-import type { ReactNode } from "react";
+import { Icon } from "./icon";
 
-const CARDS: { title: string; description: string; icon: ReactNode }[] = [
+const CARDS = [
   {
+    icon: "mosque",
     title: "Tentang AMKI",
     description:
-      "Asosiasi Masjid Kampus Indonesia (AMKI) mewadahi sinergi pengelolaan masjid kampus se-Jawa Timur.",
-    icon: (
-      <path d="M3 21h18M5 21V10l7-6 7 6v11M9 21v-6h6v6M9 10h.01M15 10h.01" />
-    ),
+      "Asosiasi Masjid Kampus Indonesia mewadahi pengurus dan aktivis takmir masjid universitas dalam membangun ekosistem sivitas akademika yang religius, berwawasan global, dan profesional.",
+    tag: "Fasilitator Sinergi Kampus",
   },
   {
+    icon: "target",
     title: "Tujuan Rakerwil",
     description:
-      "Menyusun program kerja wilayah, mempererat jejaring delegasi, dan memilih Ketua AMKI Jawa Timur periode berikutnya.",
-    icon: <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
+      "Menyelaraskan peta jalan dakwah kampus, digitalisasi layanan jamaah, standardisasi tata kelola keuangan wakaf, serta memperkuat jejaring antar-masjid kampus se-Jawa Timur.",
+    tag: "Rencana Aksi Wilayah",
   },
   {
+    icon: "domain",
     title: "Lokasi & Fasilitas",
     description:
-      "Bertempat di kampus tuan rumah dengan fasilitas penginapan, konsumsi, dan ruang sidang bagi seluruh delegasi.",
-    icon: (
-      <path d="M12 21s-7-5.686-7-11a7 7 0 1114 0c0 5.314-7 11-7 11zM12 13a2 2 0 100-4 2 2 0 000 4z" />
-    ),
+      "Diselenggarakan di kompleks kampus terpadu dengan akomodasi wisma tamu representatif, auditorium berkapasitas 500 peserta, serta akses langsung ke sarana ibadah masjid utama.",
+    tag: "Akses & Logistik Terjamin",
   },
 ];
 
 export function Profil() {
   return (
-    <section id="profil" className="bg-surface-muted px-6 py-20">
-      <div className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-3">
-        {CARDS.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-lg border border-border bg-surface p-6 shadow-[var(--shadow-card)]"
-          >
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-700">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.75}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                {card.icon}
-              </svg>
-            </div>
-            <h3 className="font-semibold text-text">{card.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-text-muted">{card.description}</p>
+    <section id="profil-kegiatan" className="w-full bg-stitch-surface-container-low py-space-xl lg:py-24">
+      <div className="mx-auto max-w-7xl px-margin-sm lg:px-margin">
+        <div className="mb-space-xl text-center">
+          <div className="mb-space-xs inline-flex items-center gap-1 text-stitch-primary">
+            <Icon name="verified" className="text-[18px]" />
+            <span className="text-label-md font-bold uppercase tracking-widest">Visi &amp; Pilar</span>
           </div>
-        ))}
+          <h2 className="mb-space-xs text-headline-lg font-extrabold tracking-tight text-stitch-on-surface">
+            Profil Kegiatan
+          </h2>
+          <p className="mx-auto max-w-xl text-stitch-on-surface-variant">
+            Mengenal Peran dan Visi Strategis Rakerwil AMKI Jawa Timur
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-space-lg md:grid-cols-3">
+          {CARDS.map((card) => (
+            <div
+              key={card.title}
+              className="flex flex-col justify-between rounded-xl bg-stitch-surface-container-lowest p-space-xl shadow-sm transition-all duration-300 hover:shadow-lg"
+            >
+              <div>
+                <div className="mb-space-lg flex h-14 w-14 items-center justify-center rounded-full bg-stitch-primary/10 text-stitch-primary">
+                  <Icon name={card.icon} className="text-[28px]" />
+                </div>
+                <h3 className="mb-space-sm text-headline-sm font-bold text-stitch-on-surface">
+                  {card.title}
+                </h3>
+                <p className="mb-space-md leading-relaxed text-stitch-on-surface-variant">
+                  {card.description}
+                </p>
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-label-md font-bold text-stitch-primary">
+                <span>{card.tag}</span>
+                <Icon name="chevron_right" className="text-[16px]" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
