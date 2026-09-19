@@ -21,7 +21,7 @@ export function Hero() {
         </div>
 
         <h1 className="mb-space-md max-w-4xl text-display-mobile tracking-tight text-white drop-shadow-sm sm:text-display">
-          AMKI Wilayah Jawa Timur
+          PW AMKI Wilayah Jawa Timur
         </h1>
 
         <p className="mb-space-lg max-w-3xl text-title-md font-normal leading-relaxed text-stitch-on-primary-container">

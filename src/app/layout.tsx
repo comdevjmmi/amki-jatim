@@ -33,13 +33,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} h-full antialiased`}
     >
-      {/* Material Symbols Outlined — icon font used by the Stitch-designed
-          landing page (src/components/landing/*). Not a next/font candidate
-          (variable icon font, not a text typeface), so linked directly. */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
-        rel="stylesheet"
-      />
+      <head>
+        {/* Material Symbols Outlined — icon font used by the Stitch-designed
+            landing page (src/components/landing/*). Not a next/font candidate
+            (variable icon font, not a text typeface), so linked directly.
+            Must live inside <head>, not directly under <html> — React/Next
+            reject <link> as a direct child of <html> at runtime (hydration
+            error), even though it doesn't fail the build. */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
