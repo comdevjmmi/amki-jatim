@@ -38,7 +38,7 @@ export function Countdown({ targetIso }: { targetIso: string }) {
   }, [targetIso]);
 
   return (
-    <div className="grid w-full max-w-md grid-cols-4 gap-3">
+    <div className="grid w-full max-w-md grid-cols-2 gap-3 sm:grid-cols-4">
       {UNITS.map((unit) => (
         <div
           key={unit.key}

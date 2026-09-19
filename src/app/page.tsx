@@ -4,10 +4,12 @@ import { Hero } from "@/components/landing/hero";
 import { Navbar } from "@/components/landing/navbar";
 import { Profil } from "@/components/landing/profil";
 import { RundownTabs } from "@/components/landing/rundown-tabs";
+import { Stats } from "@/components/landing/stats";
+import { getLandingStats } from "@/lib/data/landing-stats";
 import { getVotingSettings } from "@/lib/data/voting-settings";
 
 export default async function Home() {
-  const { isVotingVisible } = await getVotingSettings();
+  const [{ isVotingVisible }, stats] = await Promise.all([getVotingSettings(), getLandingStats()]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -29,6 +31,7 @@ export default async function Home() {
         </section>
 
         <Profil />
+        <Stats {...stats} />
         <CtaBanner />
       </main>
 

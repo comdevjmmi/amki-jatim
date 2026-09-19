@@ -1,10 +1,22 @@
+import Image from "next/image";
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="bg-text px-6 py-12 text-slate-300">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-3">
         <div>
-          <p className="text-lg font-bold text-white">AMKI Jawa Timur</p>
-          <p className="mt-2 max-w-xs text-sm">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/images/amki-logo.png"
+              alt="AMKI Jatim"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+            <p className="text-lg font-bold text-white">AMKI Jawa Timur</p>
+          </div>
+          <p className="mt-3 max-w-xs text-sm">
             Asosiasi Masjid Kampus Indonesia — Wilayah Jawa Timur.
           </p>
         </div>
@@ -13,6 +25,18 @@ export function Footer() {
           <p className="font-semibold text-white">Kontak Panitia</p>
           <p className="mt-2">rakerwil@amki-jatim.or.id</p>
           <p>+62 812-3456-7890</p>
+        </div>
+
+        <div className="text-sm">
+          <p className="font-semibold text-white">Tautan</p>
+          <div className="mt-2 flex flex-col gap-1.5">
+            <Link href="/#rundown" className="hover:text-white">
+              Rundown Acara
+            </Link>
+            <Link href="/register" className="hover:text-white">
+              Registrasi Peserta
+            </Link>
+          </div>
         </div>
       </div>
 
