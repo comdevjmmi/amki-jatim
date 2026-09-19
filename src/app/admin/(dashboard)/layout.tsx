@@ -10,11 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden bg-slate-50/50">
       <AdminSidebar logoutAction={logoutAdmin} />
-      <main className="flex-1 min-h-screen overflow-y-auto bg-slate-50/50 p-6 md:p-8">
-        {children}
-      </main>
+      <main className="h-screen flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
     </div>
   );
 }

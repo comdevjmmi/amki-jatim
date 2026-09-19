@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { generateVotingToken } from "@/app/admin/(dashboard)/tokens/actions";
+import { generateVotingToken, revokeVotingToken } from "@/app/admin/(dashboard)/tokens/actions";
 
 export interface TokenParticipantRow {
   id: string;
@@ -16,6 +17,7 @@ interface RevealedToken {
 }
 
 export function TokensDashboard({ participants }: { participants: TokenParticipantRow[] }) {
+  const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorByRow, setErrorByRow] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState<RevealedToken[]>([]);
@@ -28,8 +30,23 @@ export function TokensDashboard({ participants }: { participants: TokenParticipa
 
     if (result.status === "ok" && result.token) {
       setRevealed((prev) => [...prev, { nama: participant.nama_lengkap, token: result.token! }]);
+      router.refresh();
     } else {
       setErrorByRow((prev) => ({ ...prev, [participant.id]: result.message ?? "Gagal membuat token." }));
+    }
+    setPendingId(null);
+  }
+
+  async function handleRevoke(participant: TokenParticipantRow) {
+    if (!confirm(`Batalkan token untuk "${participant.nama_lengkap}"? Peserta bisa diberi token baru setelahnya.`)) {
+      return;
+    }
+    setPendingId(participant.id);
+    const result = await revokeVotingToken(participant.id);
+    if (result.status === "error") {
+      setErrorByRow((prev) => ({ ...prev, [participant.id]: result.message ?? "Gagal membatalkan token." }));
+    } else {
+      router.refresh();
     }
     setPendingId(null);
   }
@@ -108,7 +125,7 @@ export function TokensDashboard({ participants }: { participants: TokenParticipa
                   <StatusBadge status={p.tokenStatus} />
                 </td>
                 <td className="px-4 py-3">
-                  {p.tokenStatus === "none" ? (
+                  {p.tokenStatus === "none" && (
                     <button
                       type="button"
                       onClick={() => handleGenerate(p)}
@@ -117,8 +134,19 @@ export function TokensDashboard({ participants }: { participants: TokenParticipa
                     >
                       {pendingId === p.id ? "Membuat..." : "Generate Token"}
                     </button>
-                  ) : (
-                    <span className="text-xs text-text-muted">Sudah dibuat</span>
+                  )}
+                  {p.tokenStatus === "unused" && (
+                    <button
+                      type="button"
+                      onClick={() => handleRevoke(p)}
+                      disabled={pendingId === p.id}
+                      className="rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {pendingId === p.id ? "Membatalkan..." : "Revoke Token"}
+                    </button>
+                  )}
+                  {p.tokenStatus === "used" && (
+                    <span className="text-xs text-text-muted">Sudah dipakai</span>
                   )}
                   {errorByRow[p.id] && (
                     <p className="mt-1 text-xs text-rose-700">{errorByRow[p.id]}</p>

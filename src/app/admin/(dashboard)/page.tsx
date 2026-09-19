@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ParticipantsTable, type CampusOption, type ParticipantTableRow } from "@/components/admin/participants-table";
 import { createAdminClient } from "@/lib/supabase/server";
 import { updateParticipantStatus } from "./actions";
 import type { ParticipantStatus } from "@/lib/types";
@@ -22,6 +23,7 @@ interface ParticipantRow {
   registration_type: string;
   status: ParticipantStatus;
   created_at: string;
+  masjid_kampus_id: string | null;
   masjid_kampus: { nama: string } | null;
 }
 
@@ -37,14 +39,31 @@ export default async function AdminParticipantsPage({
   let query = supabase
     .from("participants")
     .select(
-      "id, nama_lengkap, email, no_hp, jabatan, kategori, registration_type, status, created_at, masjid_kampus(nama)",
+      "id, nama_lengkap, email, no_hp, jabatan, kategori, registration_type, status, created_at, masjid_kampus_id, masjid_kampus(nama)",
     )
     .order("created_at", { ascending: false });
 
   if (filter !== "all") query = query.eq("status", filter);
 
-  const { data, error } = await query.returns<ParticipantRow[]>();
+  const [{ data, error }, { data: campusesData }] = await Promise.all([
+    query.returns<ParticipantRow[]>(),
+    supabase.from("masjid_kampus").select("id, nama").order("nama").returns<CampusOption[]>(),
+  ]);
+
   const participants = data ?? [];
+  const campuses = campusesData ?? [];
+
+  const tableRows: ParticipantTableRow[] = participants.map((p) => ({
+    id: p.id,
+    nama_lengkap: p.nama_lengkap,
+    email: p.email,
+    no_hp: p.no_hp,
+    jabatan: p.jabatan,
+    kategori: p.kategori,
+    status: p.status,
+    masjid_kampus_id: p.masjid_kampus_id,
+    masjid_kampus_nama: p.masjid_kampus?.nama ?? "-",
+  }));
 
   return (
     <div>
@@ -84,91 +103,12 @@ export default async function AdminParticipantsPage({
       )}
 
       <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-surface-muted text-text-muted">
-            <tr>
-              <th className="px-4 py-3 font-semibold">Nama</th>
-              <th className="px-4 py-3 font-semibold">Kontak</th>
-              <th className="px-4 py-3 font-semibold">Kampus</th>
-              <th className="px-4 py-3 font-semibold">Kategori</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {participants.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
-                  Belum ada peserta.
-                </td>
-              </tr>
-            )}
-            {participants.map((p) => (
-              <tr key={p.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3">
-                  <p className="font-medium text-text">{p.nama_lengkap}</p>
-                  <p className="text-text-muted">{p.jabatan}</p>
-                </td>
-                <td className="px-4 py-3 text-text-muted">
-                  <p>{p.email}</p>
-                  <p>{p.no_hp}</p>
-                </td>
-                <td className="px-4 py-3 text-text-muted">{p.masjid_kampus?.nama ?? "-"}</td>
-                <td className="px-4 py-3 text-text-muted">
-                  {p.kategori === "peserta_penuh" ? "Peserta Penuh" : "Peninjau"}
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={p.status} />
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <form action={updateParticipantStatus}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <input type="hidden" name="status" value="approved" />
-                      <button
-                        type="submit"
-                        disabled={p.status === "approved"}
-                        className="rounded-full bg-primary-500 px-3 py-1 text-xs font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Approve
-                      </button>
-                    </form>
-                    <form action={updateParticipantStatus}>
-                      <input type="hidden" name="id" value={p.id} />
-                      <input type="hidden" name="status" value="rejected" />
-                      <button
-                        type="submit"
-                        disabled={p.status === "rejected"}
-                        className="rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Reject
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <ParticipantsTable
+          participants={tableRows}
+          campuses={campuses}
+          updateStatusAction={updateParticipantStatus}
+        />
       </div>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: ParticipantStatus }) {
-  const styles: Record<ParticipantStatus, string> = {
-    pending: "bg-accent-100 text-accent-700",
-    approved: "bg-emerald-100 text-emerald-700",
-    rejected: "bg-rose-100 text-rose-700",
-  };
-  const labels: Record<ParticipantStatus, string> = {
-    pending: "Pending",
-    approved: "Approved",
-    rejected: "Rejected",
-  };
-  return (
-    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status]}`}>
-      {labels[status]}
-    </span>
   );
 }

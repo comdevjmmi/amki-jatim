@@ -33,6 +33,45 @@ export async function createSession(formData: FormData) {
   revalidatePath("/admin/sessions");
 }
 
+export async function updateSession(formData: FormData) {
+  await requireAdminSession();
+
+  const id = formData.get("id");
+  const title = formData.get("title");
+  const speaker = formData.get("speaker");
+  const startTime = parseStartTime(formData.get("startTime"));
+
+  if (typeof id !== "string") return;
+  if (typeof title !== "string" || title.trim().length === 0) return;
+  if (startTime === "invalid") return;
+
+  const supabase = createAdminClient();
+  await supabase
+    .from("event_sessions")
+    .update({
+      title: title.trim(),
+      speaker: typeof speaker === "string" && speaker.trim().length > 0 ? speaker.trim() : null,
+      start_time: startTime,
+    })
+    .eq("id", id);
+
+  revalidatePath("/admin/sessions");
+}
+
+export async function deleteSession(formData: FormData) {
+  await requireAdminSession();
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return;
+
+  const supabase = createAdminClient();
+  // session_attendances.session_id is ON DELETE CASCADE (schema.sql) — no
+  // manual cleanup needed for attendance rows.
+  await supabase.from("event_sessions").delete().eq("id", id);
+
+  revalidatePath("/admin/sessions");
+}
+
 export async function toggleSessionActive(formData: FormData) {
   await requireAdminSession();
 

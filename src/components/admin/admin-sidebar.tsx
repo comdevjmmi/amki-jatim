@@ -22,13 +22,13 @@ export function AdminSidebar({ logoutAction }: { logoutAction: () => Promise<voi
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="sticky top-0 z-20 flex h-screen w-64 shrink-0 flex-col justify-between overflow-y-auto border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2.5 border-b border-slate-200 px-5 py-5">
         <Image src="/images/amki-logo.png" alt="Logo AMKI" width={32} height={32} className="h-8 w-8 object-contain" />
         <span className="text-base font-bold text-primary-700">AMKI Jatim Admin</span>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+      <nav className="flex flex-1 flex-col gap-1 p-3">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (

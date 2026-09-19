@@ -46,15 +46,34 @@ export async function upsertCandidate(formData: FormData) {
   revalidatePath("/vote");
 }
 
-export async function deleteCandidate(formData: FormData) {
+export interface DeleteCandidateResult {
+  status: "ok" | "error";
+  message?: string;
+}
+
+export async function deleteCandidate(candidateId: string): Promise<DeleteCandidateResult> {
   await requireAdminSession();
 
-  const id = formData.get("id");
-  if (typeof id !== "string") return;
-
   const supabase = createAdminClient();
-  await supabase.from("candidates").delete().eq("id", id);
+
+  const { count } = await supabase
+    .from("votes")
+    .select("*", { count: "exact", head: true })
+    .eq("candidate_id", candidateId);
+
+  if (count && count > 0) {
+    return {
+      status: "error",
+      message: `Tidak bisa dihapus — kandidat ini sudah menerima ${count} suara.`,
+    };
+  }
+
+  const { error } = await supabase.from("candidates").delete().eq("id", candidateId);
+  if (error) {
+    return { status: "error", message: error.message };
+  }
 
   revalidatePath("/admin/candidates");
   revalidatePath("/vote");
+  return { status: "ok" };
 }

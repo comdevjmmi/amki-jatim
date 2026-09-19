@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { SessionRow } from "@/components/admin/session-row";
 import { createAdminClient } from "@/lib/supabase/server";
-import { createSession, toggleSessionActive } from "./actions";
+import { createSession } from "./actions";
 
 interface EventSession {
   id: string;
@@ -90,46 +90,7 @@ export default async function AdminSessionsPage() {
               </tr>
             )}
             {sessions.map((s) => (
-              <tr key={s.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium text-text">{s.title}</td>
-                <td className="px-4 py-3 text-text-muted">{s.speaker ?? "-"}</td>
-                <td className="px-4 py-3 text-text-muted">
-                  {s.start_time
-                    ? new Date(s.start_time).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
-                    : "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      s.is_active ? "bg-emerald-100 text-emerald-700" : "bg-surface-muted text-text-muted"
-                    }`}
-                  >
-                    {s.is_active ? "Aktif" : "Nonaktif"}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    <form action={toggleSessionActive}>
-                      <input type="hidden" name="id" value={s.id} />
-                      <input type="hidden" name="nextActive" value={(!s.is_active).toString()} />
-                      <button
-                        type="submit"
-                        className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${
-                          s.is_active ? "bg-rose-600 hover:bg-rose-700" : "bg-primary-500 hover:bg-primary-600"
-                        }`}
-                      >
-                        {s.is_active ? "Nonaktifkan" : "Aktifkan"}
-                      </button>
-                    </form>
-                    <Link
-                      href={`/admin/sessions/${s.id}/attendance`}
-                      className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-muted hover:text-text"
-                    >
-                      Presensi
-                    </Link>
-                  </div>
-                </td>
-              </tr>
+              <SessionRow key={s.id} session={s} />
             ))}
           </tbody>
         </table>

@@ -61,3 +61,32 @@ export async function generateVotingToken(participantId: string): Promise<Genera
 
   return { status: "error", message: "Gagal membuat token unik, coba lagi." };
 }
+
+export interface RevokeTokenResult {
+  status: "ok" | "error";
+  message?: string;
+}
+
+export async function revokeVotingToken(participantId: string): Promise<RevokeTokenResult> {
+  await requireAdminSession();
+
+  const supabase = createAdminClient();
+  // is_used = false guard means an already-spent token can never be revoked
+  // this way — that would let the participant get a fresh token and vote a
+  // second time.
+  const { error, count } = await supabase
+    .from("voting_tokens")
+    .delete({ count: "exact" })
+    .eq("participant_id", participantId)
+    .eq("is_used", false);
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+  if (!count) {
+    return { status: "error", message: "Token sudah terpakai atau tidak ditemukan, tidak bisa dibatalkan." };
+  }
+
+  revalidatePath("/admin/tokens");
+  return { status: "ok" };
+}

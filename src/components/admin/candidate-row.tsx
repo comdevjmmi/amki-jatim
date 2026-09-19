@@ -7,6 +7,19 @@ import { CandidateFields } from "./candidate-fields";
 
 export function CandidateRow({ candidate }: { candidate: Candidate }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!confirm(`Hapus kandidat "${candidate.nama}"?`)) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    const result = await deleteCandidate(candidate.id);
+    if (result.status === "error") {
+      setDeleteError(result.message ?? "Gagal menghapus.");
+    }
+    setIsDeleting(false);
+  }
 
   if (isEditing) {
     return (
@@ -67,16 +80,16 @@ export function CandidateRow({ candidate }: { candidate: Candidate }) {
           >
             Edit
           </button>
-          <form action={deleteCandidate}>
-            <input type="hidden" name="id" value={candidate.id} />
-            <button
-              type="submit"
-              className="rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700"
-            >
-              Hapus
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isDeleting ? "Menghapus..." : "Hapus"}
+          </button>
         </div>
+        {deleteError && <p className="mt-1 text-xs text-rose-700">{deleteError}</p>}
       </td>
     </tr>
   );
