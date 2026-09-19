@@ -2,18 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "@/components/ui/motion";
-import type { Variants } from "framer-motion";
 import { Icon } from "./icon";
-
-const listVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.12 } },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, x: -35 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
 
 interface RundownItem {
   step: string;
@@ -104,16 +93,17 @@ export function RundownTabs() {
         </div>
       )}
 
-      <motion.ol
-        variants={listVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.2 }}
-        className="relative space-y-8 pl-6 sm:pl-10"
-      >
+      <motion.ol className="relative space-y-8 pl-6 sm:pl-10">
         <div className="absolute bottom-3 left-2 top-3 w-0.5 bg-stitch-primary/20 sm:left-4" />
         {activeDay.items.map((item) => (
-          <motion.li key={item.title} variants={cardVariants} className="group relative flex items-start">
+          <motion.li
+            key={item.title}
+            initial={{ opacity: 0, x: -35 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3, margin: "0px 0px -50px 0px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="group relative flex items-start"
+          >
             <div className="absolute -left-6 mt-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-stitch-primary ring-4 ring-stitch-surface sm:-left-10 sm:h-5 sm:w-5">
               <span className="h-1.5 w-1.5 rounded-full bg-stitch-surface-container-lowest" />
             </div>
