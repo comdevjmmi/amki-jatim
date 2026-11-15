@@ -13,6 +13,14 @@
   --background: #ffffff;
   --foreground: #0f172a;
 
+  /* Loaded via <link> in layout.tsx's <head>, not next/font/google — see
+     the comment there for why. Names kept identical to what next/font's
+     generated .variable class used to provide, so every existing
+     var(--font-*) reference elsewhere needs no change. */
+  --font-geist-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-plus-jakarta-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
   --color-primary-50: #eff9ff;
   --color-primary-100: #def2ff;
   --color-primary-500: #0284c7;

@@ -1,26 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Landing-page-only typeface (Stitch design spec) — registered as a CSS
-// variable here rather than the default body font, so /admin, /register and
-// /vote keep using Geist. Applied via var(--font-plus-jakarta-sans) on the
-// landing page's own wrapper in src/app/page.tsx.
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-});
 
 const SITE_DESCRIPTION =
   "Registrasi Peserta & E-Voting Rakerwil II PW AMKI Jawa Timur 2026 — Sabtu, 21 November 2026 di Universitas Islam Malang (UNISMA).";
@@ -38,11 +17,31 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} h-full antialiased`}
-    >
+    <html lang="id" className="h-full antialiased">
       <head>
+        {/*
+          Geist, Geist Mono, and Plus Jakarta Sans loaded via standard
+          <link> tags instead of next/font/google. Turbopack's font loader
+          (`@vercel/turbopack-next/internal/font/google/font`) fails to
+          resolve on Vercel's build image for this project ("next/font/google
+          queries have exactly one entry") even though it builds fine
+          locally — a Vercel-side Turbopack/font-loader mismatch, not
+          something fixable from app code. Linking the fonts directly
+          sidesteps that loader entirely. The --font-geist-sans,
+          --font-geist-mono, and --font-plus-jakarta-sans CSS variables are
+          now declared in globals.css (:root) instead of via next/font's
+          generated .variable class, so every existing var(--font-*)
+          reference (Tailwind's --font-sans/--font-mono, and the inline
+          style on the landing page wrapper in src/app/page.tsx) keeps
+          working unchanged — the rendered typography is identical.
+        */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+
         {/* Material Symbols Outlined — icon font used by the Stitch-designed
             landing page (src/components/landing/*). Not a next/font candidate
             (variable icon font, not a text typeface), so linked directly.
