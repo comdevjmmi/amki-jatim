@@ -9,27 +9,45 @@ const cardVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-const CARDS = [
+interface ProfilCard {
+  icon: string;
+  title: string;
+  tag: string;
+  description?: string;
+  items?: string[];
+}
+
+// Narrative per Proposal Kegiatan Rakerwil II PW AMKI Jatim 2026: latar
+// belakang (Rakerwil I ITS 2024 → Rakerwil II UNISMA 2026), 3 pilar utama,
+// dan 4 tujuan kegiatan.
+const CARDS: ProfilCard[] = [
   {
     icon: "mosque",
-    title: "Tentang AMKI",
+    title: "Latar Belakang",
     description:
-      "Asosiasi Masjid Kampus Indonesia mewadahi pengurus dan aktivis takmir masjid universitas dalam membangun ekosistem sivitas akademika yang religius, berwawasan global, dan profesional.",
-    tag: "Fasilitator Sinergi Kampus",
+      "Dua tahun setelah Rakerwil I 2024 di ITS Surabaya, Rakerwil II AMKI Jawa Timur 2026 di UNISMA Malang menjadi babak akselerasi program nyata — dari konsolidasi menuju dampak yang terukur bagi masjid kampus se-Jawa Timur.",
+    tag: "ITS Surabaya 2024 → UNISMA Malang 2026",
   },
   {
     icon: "target",
-    title: "Tujuan Rakerwil",
-    description:
-      "Menyelaraskan peta jalan dakwah kampus, digitalisasi layanan jamaah, standardisasi tata kelola keuangan wakaf, serta memperkuat jejaring antar-masjid kampus se-Jawa Timur.",
+    title: "3 Pilar Utama",
+    items: [
+      "Pengembangan Rumah Amal Masjid Kampus (YRAMKI) & resiliensi finansial berbasis ZISWAF yang akuntabel.",
+      "Penguatan & rekrutmen basis Takmir Muda (AMKI Muda): leadership, entrepreneurship, literasi digital.",
+      "Sinergi & kemitraan strategis dengan DUDI, perbankan syariah, lembaga ZISWAF nasional, BUMN, dan CSR/ESG.",
+    ],
     tag: "Rencana Aksi Wilayah",
   },
   {
-    icon: "domain",
-    title: "Lokasi & Fasilitas",
-    description:
-      "Diselenggarakan di kompleks kampus terpadu dengan akomodasi wisma tamu representatif, auditorium berkapasitas 500 peserta, serta akses langsung ke sarana ibadah masjid utama.",
-    tag: "Akses & Logistik Terjamin",
+    icon: "flag",
+    title: "4 Tujuan Kegiatan",
+    items: [
+      "Mengevaluasi capaian 2 tahun kepengurusan dan memantapkan program kerja strategis berikutnya.",
+      "Inisiasi & standardisasi tata kelola unit Rumah Amal Masjid Kampus di setiap PTN/PTS se-Jawa Timur.",
+      "Penguatan struktur, jejaring, dan roadmap pembinaan AMKI Muda se-Jawa Timur.",
+      "Membangun resiliensi finansial dan skema usaha otonom masjid serta wakaf produktif.",
+    ],
+    tag: "225 Peserta & Panitia",
   },
 ];
 
@@ -68,9 +86,24 @@ export function Profil() {
                 <h3 className="mb-space-sm text-headline-sm font-bold text-stitch-on-surface">
                   {card.title}
                 </h3>
-                <p className="mb-space-md leading-relaxed text-stitch-on-surface-variant">
-                  {card.description}
-                </p>
+                {card.description && (
+                  <p className="mb-space-md leading-relaxed text-stitch-on-surface-variant">
+                    {card.description}
+                  </p>
+                )}
+                {card.items && (
+                  <ul className="mb-space-md flex flex-col gap-space-xs">
+                    {card.items.map((entry) => (
+                      <li
+                        key={entry}
+                        className="flex items-start gap-space-xs leading-relaxed text-stitch-on-surface-variant"
+                      >
+                        <Icon name="check_circle" className="mt-0.5 shrink-0 text-[16px] text-stitch-primary" />
+                        <span>{entry}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div className="mt-2 flex items-center gap-2 text-label-md font-bold text-stitch-primary">
                 <span>{card.tag}</span>

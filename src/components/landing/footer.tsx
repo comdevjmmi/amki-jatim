@@ -38,7 +38,7 @@ export function Footer() {
             </p>
             <p className="flex items-start gap-space-xs">
               <Icon name="location_on" className="mt-0.5 text-[16px] text-stitch-tertiary-fixed-dim" />
-              Universitas Islam Darul Ulum (UNISDA) Lamongan
+              Universitas Islam Malang (UNISMA), Kota Malang
             </p>
           </div>
         </div>

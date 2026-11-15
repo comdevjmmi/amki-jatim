@@ -22,9 +22,18 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ["400", "600", "700", "800"],
 });
 
+const SITE_DESCRIPTION =
+  "Registrasi Peserta & E-Voting Rakerwil II PW AMKI Jawa Timur 2026 — Sabtu, 21 November 2026 di Universitas Islam Malang (UNISMA).";
+
 export const metadata: Metadata = {
-  title: "Rakerwil AMKI Jawa Timur",
-  description: "Registrasi Peserta & E-Voting Pemilihan Ketua AMKI Wilayah Jawa Timur",
+  title: "Rakerwil II PW AMKI Jawa Timur 2026",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: "Rakerwil II PW AMKI Jawa Timur 2026 — UNISMA Malang",
+    description: SITE_DESCRIPTION,
+    locale: "id_ID",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

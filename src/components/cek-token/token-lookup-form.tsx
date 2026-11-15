@@ -80,7 +80,7 @@ export function TokenLookupForm() {
             <Icon name="lock" className="mt-0.5 shrink-0 text-base text-primary-700" />
             <p>
               Verifikasi diproses melalui enkripsi SSL/TLS hanya untuk pencocokan hak suara resmi
-              Rakerwil AMKI Jatim 2026 di UNISDA Lamongan. Sesuai asas LUBERJURDIL, pilihan suara
+              Rakerwil II AMKI Jatim 2026 di UNISMA Malang. Sesuai asas LUBERJURDIL, pilihan suara
               Anda di bilik suara dijamin 100% anonim dan rahasia (Secret Ballot).
             </p>
           </div>

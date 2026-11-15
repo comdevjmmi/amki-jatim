@@ -65,8 +65,8 @@ export default async function BeritaAcaraPage() {
           </p>
           <p className="text-base font-semibold uppercase">Dewan Pengurus Wilayah Jawa Timur</p>
           <p className="text-sm text-text-muted">
-            Rapat Kerja Wilayah (Rakerwil) AMKI Jawa Timur 2026 — Universitas Islam Darul Ulum
-            (UNISDA) Lamongan
+            Rapat Kerja Wilayah (Rakerwil) II AMKI Jawa Timur 2026 — Universitas Islam Malang
+            (UNISMA)
           </p>
         </div>
       </div>
@@ -79,10 +79,10 @@ export default async function BeritaAcaraPage() {
       </p>
 
       <p className="mt-8 text-sm leading-relaxed">
-        Pada hari ini, {today}, bertempat di Universitas Islam Darul Ulum (UNISDA) Lamongan, telah
-        dilaksanakan pemungutan suara pemilihan Ketua Asosiasi Masjid Kampus Indonesia (AMKI)
-        Wilayah Jawa Timur dalam rangkaian Rapat Kerja Wilayah (Rakerwil) AMKI Jawa Timur 2026,
-        dengan hasil rekapitulasi sebagai berikut:
+        Pada hari ini, {today}, bertempat di Universitas Islam Malang (UNISMA), telah dilaksanakan
+        pemungutan suara pemilihan Ketua Asosiasi Masjid Kampus Indonesia (AMKI) Wilayah Jawa
+        Timur dalam rangkaian Rapat Kerja Wilayah (Rakerwil) II AMKI Jawa Timur 2026, dengan hasil
+        rekapitulasi sebagai berikut:
       </p>
 
       <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm">

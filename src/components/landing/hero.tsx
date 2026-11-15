@@ -6,11 +6,12 @@ import type { Variants } from "framer-motion";
 import { Countdown } from "./countdown";
 import { Icon } from "./icon";
 
-// Official date per the Surat Undangan & Rundown Rakerwil AMKI Jatim 2026.
-// No specific start time was given — 08:00 WIB assumed (typical registration
-// opening time); update here if the real invitation states otherwise.
-const EVENT_DATE = "2026-10-24T08:00:00+07:00";
-const EVENT_DATE_LABEL = "24 Oktober 2026";
+// Official date & venue per the Proposal Kegiatan Rakerwil II PW AMKI Jatim
+// 2026 (ignore the "24 Oktober" / "15.39" typos on pages 5-6 of that PDF —
+// the cover/body text and this value are the ground truth). Registration
+// opens 07.00 WIB; the program itself starts 07.30 WIB.
+const EVENT_DATE = "2026-11-21T07:30:00+07:00";
+const EVENT_DATE_LABEL = "21 November 2026";
 
 const container: Variants = {
   hidden: {},
@@ -46,15 +47,15 @@ export function Hero() {
           variants={item}
           className="mb-space-md max-w-4xl text-display-mobile tracking-tight text-white drop-shadow-sm sm:text-display"
         >
-          PW AMKI Wilayah Jawa Timur
+          Rakerwil II PW AMKI Wilayah Jawa Timur
         </motion.h1>
 
         <motion.p
           variants={item}
           className="mb-space-lg max-w-3xl text-title-md font-normal leading-relaxed text-stitch-on-primary-container"
         >
-          &ldquo;Revitalisasi Masjid Kampus sebagai Episentrum Transformasi Moral, Sains, dan
-          Peradaban Bangsa&rdquo;
+          &ldquo;Akselerasi Masjid Kampus Berdampak: Mengokohkan Resiliensi Melalui Rumah Amal dan
+          Membangun Basis Takmir Muda yang Progresif di Jawa Timur&rdquo;
         </motion.p>
 
         <motion.div
@@ -63,7 +64,7 @@ export function Hero() {
         >
           <div className="flex items-center gap-1.5">
             <Icon name="location_on" className="text-[18px] text-stitch-secondary-fixed" />
-            <span>Lamongan, Jawa Timur</span>
+            <span>Malang, Jawa Timur</span>
           </div>
           <span className="hidden text-white/40 sm:inline">&bull;</span>
           <div className="flex items-center gap-1.5">
@@ -73,7 +74,7 @@ export function Hero() {
           <span className="hidden text-white/40 sm:inline">&bull;</span>
           <div className="flex items-center gap-1.5">
             <Icon name="account_balance" className="text-[18px] text-stitch-secondary-fixed" />
-            <span>Universitas Islam Darul Ulum (UNISDA) Lamongan</span>
+            <span>Universitas Islam Malang (UNISMA)</span>
           </div>
         </motion.div>
 

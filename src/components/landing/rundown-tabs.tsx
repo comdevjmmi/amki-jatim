@@ -15,54 +15,45 @@ interface RundownDay {
   items: RundownItem[];
 }
 
-// Official agenda per the Surat Undangan & Rundown Rakerwil AMKI Jatim 2026 —
-// a single-day event (24 Oktober 2026), so there is only one "day" here. No
-// specific clock times were given for each session, so a sequence marker
-// ("Sesi N") is shown instead of a fabricated time range.
+// Official agenda per the Proposal Kegiatan Rakerwil II PW AMKI Jatim 2026 —
+// a single-day event (21 November 2026 di UNISMA Malang), so there is only
+// one "day" here.
 const RUNDOWN: RundownDay[] = [
   {
-    label: "24 Oktober 2026",
+    label: "21 November 2026",
     items: [
       {
-        step: "Sesi 1",
-        title: "Registrasi Delegasi",
+        step: "07.00 – 08.00 WIB",
+        title: "Registrasi Peserta",
         description: "Registrasi ulang dan penyambutan seluruh delegasi masjid kampus se-Jawa Timur.",
       },
       {
-        step: "Sesi 2",
-        title: "Pembukaan",
-        description: "Sambutan pembukaan oleh Rektor UNISDA Lamongan dan Ketua DPW AMKI Jawa Timur.",
-      },
-      {
-        step: "Sesi 3",
-        title: "Pengarahan Ketua Umum AMKI Pusat",
-        description: "Pengarahan dan pembinaan dari Ketua Umum AMKI Pusat.",
-      },
-      {
-        step: "Sesi 4",
-        title: "Paparan Program Kerja",
-        description: "Pemaparan program kerja wilayah AMKI Jawa Timur.",
-      },
-      {
-        step: "Sesi 5",
-        title: "Sharing Session",
-        description: "Sesi berbagi pengalaman dan diskusi terbuka antar delegasi masjid kampus.",
-      },
-      {
-        step: "Sesi 6",
-        title: "Diskusi Komisi",
-        description: "Pembahasan dan penyusunan rekomendasi program kerja per komisi.",
-      },
-      {
-        step: "Sesi 7",
-        title: "Sidang Pleno",
+        step: "08.00 – 09.00 WIB",
+        title: "Pembukaan Rakerwil PW AMKI Jawa Timur",
         description:
-          "Pengesahan hasil sidang komisi dan penetapan rekomendasi wilayah, termasuk pemilihan Ketua AMKI Jawa Timur periode berikutnya.",
+          "Lagu Indonesia Raya & Mars AMKI, pembukaan oleh MC, tilawah Al-Qur'an, sambutan Ketua PW AMKI Jawa Timur, sambutan Rektor UNISMA, sambutan Ketua PP AMKI, seremonial pembukaan Rakerwil, dan pembacaan do'a.",
       },
       {
-        step: "Sesi 8",
-        title: "Penutupan",
-        description: "Pengumuman hasil sidang dan penutupan resmi Rakerwil AMKI Jawa Timur 2026.",
+        step: "09.15 – 11.30 WIB",
+        title: "Diskusi Panel & Keynote Speech",
+        description:
+          "Menghadirkan Ketua PP AMKI, Rektor Universitas Islam Malang (UNISMA), Majelis Ulama Indonesia (MUI) Provinsi Jawa Timur, dan Badan Amil Zakat Nasional (BAZNAS) Jawa Timur.",
+      },
+      {
+        step: "11.30 – 12.30 WIB",
+        title: "Ishoma",
+        description: "Istirahat, sholat, dan makan siang bersama seluruh delegasi.",
+      },
+      {
+        step: "12.30 – 15.30 WIB",
+        title: "Rapat Kerja & Sidang Komisi",
+        description:
+          "Penyusunan & penetapan program kerja PW AMKI Jatim 2026/2027 melalui Sidang Komisi A (Tata Kelola & Rumah Amal), Komisi B (Pembinaan AMKI Muda), dan Komisi C (Kemitraan Strategis & Inovasi Syariah), serta konsolidasi dan penetapan pengurus AMKI Muda Jawa Timur.",
+      },
+      {
+        step: "15.30 – 16.00 WIB",
+        title: "Penutupan Rakerwil PW AMKI Jawa Timur",
+        description: "Pengumuman hasil sidang dan penutupan resmi Rakerwil II AMKI Jawa Timur 2026.",
       },
     ],
   },
