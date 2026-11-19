@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InvitedGuestsTable, type InvitedGuestTableRow } from "@/components/admin/invited-guests-table";
 import { createAdminClient } from "@/lib/supabase/server";
 
 type StatusFilter = "all" | "hadir" | "belum";
@@ -16,27 +17,6 @@ const TITLE_FILTERS: { value: TitleFilter; label: string }[] = [
   { value: "Mahasiswa", label: "Mahasiswa" },
 ];
 
-interface GuestRow {
-  id: string;
-  full_name: string;
-  campus_name: string;
-  title: string;
-  contact: string | null;
-  is_claimed: boolean;
-  claimed_at: string | null;
-}
-
-function formatJam(iso: string): string {
-  return new Date(iso)
-    .toLocaleString("id-ID", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Jakarta",
-    })
-    .replace(":", ".");
-}
 
 export default async function InvitedGuestsPage({
   searchParams,
@@ -57,7 +37,7 @@ export default async function InvitedGuestsPage({
     .from("invited_guests")
     .select("id, full_name, campus_name, title, contact, is_claimed, claimed_at")
     .order("full_name")
-    .returns<GuestRow[]>();
+    .returns<InvitedGuestTableRow[]>();
 
   const all = data ?? [];
   const hadirCount = all.filter((g) => g.is_claimed).length;
@@ -142,47 +122,7 @@ export default async function InvitedGuestsPage({
       <p className="mt-4 text-sm text-text-muted">Menampilkan {guests.length} dari {all.length} tamu</p>
 
       <div className="mt-2 overflow-x-auto rounded-lg border border-border bg-surface shadow-[var(--shadow-card)]">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-border bg-surface-muted text-text-muted">
-            <tr>
-              <th className="px-4 py-3 font-semibold">No</th>
-              <th className="px-4 py-3 font-semibold">Nama</th>
-              <th className="px-4 py-3 font-semibold">Kampus</th>
-              <th className="px-4 py-3 font-semibold">Kalangan</th>
-              <th className="px-4 py-3 font-semibold">Kontak</th>
-              <th className="px-4 py-3 font-semibold">Kehadiran</th>
-            </tr>
-          </thead>
-          <tbody>
-            {guests.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-text-muted">
-                  Tidak ada tamu yang cocok.
-                </td>
-              </tr>
-            )}
-            {guests.map((g, i) => (
-              <tr key={g.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 text-text-muted">{i + 1}</td>
-                <td className="px-4 py-3 font-medium text-text">{g.full_name}</td>
-                <td className="px-4 py-3 text-text-muted">{g.campus_name}</td>
-                <td className="px-4 py-3 text-text-muted">{g.title}</td>
-                <td className="px-4 py-3 text-text-muted">{g.contact ?? "-"}</td>
-                <td className="px-4 py-3">
-                  {g.is_claimed ? (
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                      Hadir{g.claimed_at ? ` · ${formatJam(g.claimed_at)}` : ""}
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-text-muted">
-                      Belum hadir
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <InvitedGuestsTable guests={guests} />
       </div>
     </div>
   );
