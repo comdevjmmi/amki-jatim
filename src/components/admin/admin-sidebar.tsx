@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/admin", icon: "👥", label: "Peserta Masuk" },
+  { href: "/admin/invited-guests", icon: "📋", label: "Tamu Undangan" },
   { href: "/admin/sessions", icon: "📅", label: "Sesi Presensi" },
   { href: "/admin/candidates", icon: "🗳️", label: "Kandidat Ketua" },
   { href: "/admin/tokens", icon: "🔑", label: "Token Pemilih" },
