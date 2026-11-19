@@ -2,7 +2,7 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { registerParticipant, type RegisterState } from "@/app/register/actions";
+import { getGuestPrefill, registerParticipant, type RegisterState } from "@/app/register/actions";
 import { InvitedGuestCombobox } from "./invited-guest-combobox";
 import type { InvitedGuestOption, RegistrationType } from "@/lib/types";
 
@@ -12,6 +12,37 @@ export function RegistrationForm() {
   const [state, formAction, isPending] = useActionState(registerParticipant, INITIAL_STATE);
   const [registrationType, setRegistrationType] = useState<RegistrationType>("invited");
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
+  const [email, setEmail] = useState("");
+  const [noHp, setNoHp] = useState("");
+  const [prefillStatus, setPrefillStatus] = useState<"idle" | "loading" | "filled" | "shared-email">("idle");
+
+  // Picking a name pre-fills WhatsApp/email from what panitia stored, so the
+  // guest only has to review (and correct) them before confirming.
+  async function handleSelectGuest(guest: InvitedGuestOption | null) {
+    setSelectedGuest(guest);
+    setEmail("");
+    setNoHp("");
+    setPrefillStatus("idle");
+    if (!guest || guest.isPresent) return;
+
+    setPrefillStatus("loading");
+    const prefill = await getGuestPrefill(guest.id);
+    if (!prefill) {
+      setPrefillStatus("idle");
+      return;
+    }
+    setEmail(prefill.email);
+    setNoHp(prefill.noHp);
+    setPrefillStatus(prefill.emailShared ? "shared-email" : "filled");
+  }
+
+  function switchType(next: RegistrationType) {
+    setRegistrationType(next);
+    setEmail("");
+    setNoHp("");
+    setPrefillStatus("idle");
+    if (next === "representative") setSelectedGuest(null);
+  }
 
   if (state.status === "success") {
     const isInvited = registrationType === "invited";
@@ -61,13 +92,13 @@ export function RegistrationForm() {
         <div className="flex rounded-full border border-border p-1">
           <TypeToggleButton
             active={registrationType === "invited"}
-            onClick={() => setRegistrationType("invited")}
+            onClick={() => switchType("invited")}
           >
             Tamu Undangan Terdaftar
           </TypeToggleButton>
           <TypeToggleButton
             active={registrationType === "representative"}
-            onClick={() => setRegistrationType("representative")}
+            onClick={() => switchType("representative")}
           >
             Perwakilan / Delegasi Baru
           </TypeToggleButton>
@@ -81,26 +112,73 @@ export function RegistrationForm() {
           </label>
           <InvitedGuestCombobox
             selected={selectedGuest}
-            onSelect={setSelectedGuest}
-            onNotFound={() => setRegistrationType("representative")}
+            onSelect={handleSelectGuest}
+            onNotFound={() => switchType("representative")}
           />
           <p className="mt-2 text-xs text-text-muted">
-            Pilih nama Anda, lengkapi email & WhatsApp, lalu tekan Konfirmasi
-            Hadir. Nama yang sudah hadir ditandai beserta jam kedatangannya.
+            Pilih nama Anda, periksa email &amp; WhatsApp yang terisi otomatis (boleh diubah
+            jika kurang tepat), lalu tekan Konfirmasi Hadir. Nama yang sudah hadir ditandai
+            beserta jam kedatangannya.
           </p>
         </section>
       ) : (
         <section className="grid gap-4 sm:grid-cols-2">
           <Field label="Nama Lengkap" name="namaLengkap" required className="sm:col-span-2" />
-          <Field label="Jabatan di Organisasi" name="jabatan" placeholder="Ketua Umum" />
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-text">
+              Mahasiswa / Dosen<span className="text-accent-600"> *</span>
+            </span>
+            <select
+              name="jabatan"
+              required
+              defaultValue=""
+              className="rounded-md border border-border bg-surface px-4 py-2.5 text-text outline-none focus:border-primary-500"
+            >
+              <option value="" disabled>
+                Pilih...
+              </option>
+              <option value="Mahasiswa">Mahasiswa</option>
+              <option value="Dosen">Dosen</option>
+            </select>
+          </label>
           <Field label="Masjid Kampus / Lembaga" name="kampusNama" required />
           <Field label="Kota/Kabupaten" name="kampusKota" />
         </section>
       )}
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <Field label="Email" name="email" type="email" required />
-        <Field label="Nomor WhatsApp" name="noHp" type="tel" required />
+        <Field
+          label="Email"
+          name="email"
+          type="email"
+          required
+          value={email}
+          onChange={setEmail}
+          disabled={prefillStatus === "loading"}
+        />
+        <Field
+          label="Nomor WhatsApp"
+          name="noHp"
+          type="tel"
+          required
+          value={noHp}
+          onChange={setNoHp}
+          disabled={prefillStatus === "loading"}
+        />
+        {prefillStatus === "loading" && (
+          <p className="text-xs text-text-muted sm:col-span-2">Mengambil data Anda...</p>
+        )}
+        {prefillStatus === "filled" && (
+          <p className="text-xs text-text-muted sm:col-span-2">
+            Data terisi dari daftar panitia. Perubahan yang Anda buat akan menggantikan data lama.
+          </p>
+        )}
+        {prefillStatus === "shared-email" && (
+          <p className="text-xs text-amber-700 sm:col-span-2">
+            Email di daftar panitia dipakai bersama peserta lain, jadi tidak diisi otomatis.
+            Mohon isi email pribadi Anda.
+          </p>
+        )}
       </section>
 
       {state.status === "error" && (
@@ -153,6 +231,9 @@ function Field({
   required,
   placeholder,
   className,
+  value,
+  onChange,
+  disabled,
 }: {
   label: string;
   name: string;
@@ -160,6 +241,9 @@ function Field({
   required?: boolean;
   placeholder?: string;
   className?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className={`flex flex-col gap-1.5 text-sm ${className ?? ""}`}>
@@ -172,7 +256,9 @@ function Field({
         name={name}
         required={required}
         placeholder={placeholder}
-        className="rounded-md border border-border bg-surface px-4 py-2.5 text-text outline-none focus:border-primary-500"
+        disabled={disabled}
+        {...(onChange ? { value, onChange: (event) => onChange(event.target.value) } : {})}
+        className="rounded-md border border-border bg-surface px-4 py-2.5 text-text outline-none focus:border-primary-500 disabled:opacity-60"
       />
     </label>
   );
