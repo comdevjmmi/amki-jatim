@@ -13,6 +13,7 @@ export interface InvitedGuestOption {
   fullName: string;
   campusName: string;
   title: string;
+  isClaimed: boolean;
 }
 
 export interface Candidate {

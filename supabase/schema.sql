@@ -191,10 +191,9 @@ alter publication supabase_realtime add table voting_settings;
 -- diklaim. security_invoker = false (default) supaya view ini tetap bisa
 -- membaca invited_guests walau anon tidak punya policy select langsung ke
 -- tabel aslinya.
-create view invited_guests_public as
-  select id, full_name, campus_name, title
-  from invited_guests
-  where is_claimed = false;
+create or replace view invited_guests_public as
+  select id, full_name, campus_name, title, is_claimed
+  from invited_guests;
 
 grant select on invited_guests_public to anon, authenticated;
 
