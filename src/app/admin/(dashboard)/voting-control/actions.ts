@@ -32,3 +32,14 @@ export async function setVotingOpen(formData: FormData) {
   revalidatePath("/admin/voting-control");
   revalidatePath("/vote");
 }
+
+export async function setRevealLiveCount(formData: FormData) {
+  await requireAdminSession();
+
+  const nextReveal = formData.get("nextReveal") === "true";
+  const supabase = createAdminClient();
+  await supabase.from("voting_settings").update({ reveal_live_count: nextReveal }).eq("id", 1);
+
+  revalidatePath("/admin/voting-control");
+  revalidatePath("/voting/live");
+}

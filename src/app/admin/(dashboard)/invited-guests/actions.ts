@@ -83,3 +83,41 @@ export async function deleteInvitedGuest(formData: FormData): Promise<GuestActio
   revalidatePath("/admin/invited-guests");
   return { status: "ok" };
 }
+
+export async function createInvitedGuest(formData: FormData): Promise<GuestActionResult> {
+  await requireAdminSession();
+
+  const fullName = readField(formData, "fullName");
+  const campusName = readField(formData, "campusName");
+  const title = readField(formData, "title");
+  const contact = readField(formData, "contact");
+
+  if (!fullName || !campusName) return { status: "error", message: "Nama dan kampus wajib diisi." };
+  if (title !== "Dosen" && title !== "Mahasiswa") {
+    return { status: "error", message: "Kalangan harus Dosen atau Mahasiswa." };
+  }
+
+  const supabase = createAdminClient();
+
+  // No unique constraint in the schema (two people can legitimately share a
+  // name at different campuses), so guard against an accidental double-add
+  // of the same person here instead.
+  const { data: existing } = await supabase
+    .from("invited_guests")
+    .select("id")
+    .ilike("full_name", fullName.replace(/[%_\\]/g, "\\$&"))
+    .ilike("campus_name", campusName.replace(/[%_\\]/g, "\\$&"))
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return { status: "error", message: `"${fullName}" dari ${campusName} sudah ada di daftar.` };
+  }
+
+  const { error } = await supabase
+    .from("invited_guests")
+    .insert({ full_name: fullName, campus_name: campusName, title, contact });
+  if (error) return { status: "error", message: error.message };
+
+  revalidatePath("/admin/invited-guests");
+  return { status: "ok" };
+}

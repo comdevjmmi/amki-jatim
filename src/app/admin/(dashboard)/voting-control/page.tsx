@@ -1,9 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import { setVotingOpen, setVotingVisible } from "./actions";
+import { setRevealLiveCount, setVotingOpen, setVotingVisible } from "./actions";
 
 interface VotingSettingsRow {
   is_voting_visible: boolean;
   is_voting_open: boolean;
+  reveal_live_count: boolean;
   opened_at: string | null;
   closed_at: string | null;
 }
@@ -12,13 +13,14 @@ export default async function AdminVotingControlPage() {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("voting_settings")
-    .select("is_voting_visible, is_voting_open, opened_at, closed_at")
+    .select("is_voting_visible, is_voting_open, reveal_live_count, opened_at, closed_at")
     .eq("id", 1)
     .single<VotingSettingsRow>();
 
   const settings = data ?? {
     is_voting_visible: false,
     is_voting_open: false,
+    reveal_live_count: false,
     opened_at: null,
     closed_at: null,
   };
@@ -50,6 +52,13 @@ export default async function AdminVotingControlPage() {
           isOn={settings.is_voting_open}
           action={setVotingOpen}
           fieldName="nextOpen"
+        />
+        <ToggleCard
+          title="Tampilkan Hasil di Live Count"
+          description="Kalau nonaktif, /voting/live hanya menampilkan jumlah total suara masuk dan rincian per kandidat disembunyikan. Aktifkan setelah sidang menutup pemilihan; jika diaktifkan saat bilik masih dibuka, hasil sementara langsung terlihat publik."
+          isOn={settings.reveal_live_count}
+          action={setRevealLiveCount}
+          fieldName="nextReveal"
         />
       </div>
     </div>

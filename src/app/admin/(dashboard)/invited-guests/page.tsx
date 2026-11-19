@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddInvitedGuestForm } from "@/components/admin/add-invited-guest-form";
 import { InvitedGuestsTable, type InvitedGuestTableRow } from "@/components/admin/invited-guests-table";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -72,6 +73,10 @@ export default async function InvitedGuestsPage({
         Daftar resmi panitia. Tamu yang menekan &ldquo;Konfirmasi Hadir&rdquo; di /register
         tercatat hadir di sini beserta jamnya.
       </p>
+
+      <div className="mt-4">
+        <AddInvitedGuestForm />
+      </div>
 
       <div className="mt-6 grid grid-cols-3 gap-4">
         <SummaryCard label="Total Tamu" value={all.length} />
