@@ -1,7 +1,7 @@
 "use server";
 
 import { maskName, normalizePhone } from "@/lib/mask";
-import { clientIp, isRateLimited } from "@/lib/rate-limit";
+import { clientIp, isOverLimit, isRateLimited } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export interface CheckinResult {
@@ -11,8 +11,10 @@ export interface CheckinResult {
   checkedInAt?: string;
 }
 
+// Only lookups for an unregistered number count: everyone scans the QR at the
+// same moment from the same venue WiFi address, and each of those succeeds.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX_ATTEMPTS = 20;
+const RATE_LIMIT_MAX_FAILURES = 90;
 
 interface ParticipantRow {
   id: string;
@@ -27,8 +29,8 @@ export async function checkInSelf(sessionId: string, whatsapp: string): Promise<
     return { status: "error", message: "Nomor WhatsApp wajib diisi." };
   }
 
-  const ip = await clientIp();
-  if (isRateLimited(`presensi:${ip}`, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_ATTEMPTS)) {
+  const failureKey = `presensi:${await clientIp()}`;
+  if (isOverLimit(failureKey, RATE_LIMIT_MAX_FAILURES)) {
     return { status: "rate_limited", message: "Terlalu banyak percobaan. Silakan tunggu beberapa menit dan coba lagi." };
   }
 
@@ -57,6 +59,7 @@ export async function checkInSelf(sessionId: string, whatsapp: string): Promise<
     .maybeSingle<ParticipantRow>();
 
   if (!participant) {
+    isRateLimited(failureKey, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_FAILURES);
     return {
       status: "not_found",
       message: "Nomor WhatsApp tidak ditemukan. Pastikan Anda sudah terdaftar dan disetujui panitia.",

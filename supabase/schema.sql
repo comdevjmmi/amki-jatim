@@ -38,6 +38,7 @@ as $$
   select case
     when d = '' then ''
     when d like '0%' then '62' || substr(d, 2)
+    when d like '8%' then '62' || d
     else d
   end
   from (select regexp_replace(coalesce(raw, ''), '\D', '', 'g') as d) t;

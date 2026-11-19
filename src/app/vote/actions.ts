@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/server";
-import { clientIp, isRateLimited } from "@/lib/rate-limit";
+import { clientIp, isOverLimit, isRateLimited } from "@/lib/rate-limit";
 import { hashVoteToken } from "@/lib/vote-token";
 
 export interface CastVoteResult {
@@ -17,12 +17,12 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 // Audit Finding A: 8-char tokens (~1.1T combos) are hard to guess blind, but
-// an unrate-limited endpoint still lets a script grind through them.
-// The threshold is generous (not per-token-attempt-strict) because a venue
-// full of voters on one WiFi NAT can share a single public IP, and each
-// legitimate voter only ever submits once or twice.
+// an unrate-limited endpoint still lets a script grind through them. Only
+// wrong/used-token attempts count toward the limit: a venue full of voters
+// can share one public WiFi address, and every legitimate vote succeeds, so
+// counting successes would lock voters out of each other's way.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX_ATTEMPTS = 30;
+const RATE_LIMIT_MAX_FAILURES = 90;
 
 // Deliberately a single atomic RPC call — no separate "check token" step, so
 // there's no way to probe which tokens are valid without spending them.
@@ -31,8 +31,8 @@ export async function castVote(token: string, candidateId: string): Promise<Cast
     return { status: "error", message: "Token dan kandidat wajib diisi." };
   }
 
-  const ip = await clientIp();
-  if (isRateLimited(`vote:${ip}`, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_ATTEMPTS)) {
+  const failureKey = `vote:${await clientIp()}`;
+  if (isOverLimit(failureKey, RATE_LIMIT_MAX_FAILURES)) {
     return {
       status: "error",
       message: "Terlalu banyak percobaan. Silakan tunggu beberapa menit dan coba lagi.",
@@ -47,6 +47,9 @@ export async function castVote(token: string, candidateId: string): Promise<Cast
   });
 
   if (error) {
+    if (error.message === "INVALID_OR_USED_TOKEN") {
+      isRateLimited(failureKey, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_FAILURES);
+    }
     return {
       status: "error",
       message: ERROR_MESSAGES[error.message] ?? "Terjadi kesalahan, silakan coba lagi.",

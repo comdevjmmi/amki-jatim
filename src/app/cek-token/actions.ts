@@ -25,7 +25,7 @@ export interface TokenLookupResult {
 // registered) count: a hall full of voters on one WiFi address all succeed
 // and must not throttle each other, while a sweep is almost all failures.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX_FAILURES = 15;
+const RATE_LIMIT_MAX_FAILURES = 90;
 
 export async function safeTokenLookup(whatsapp: string): Promise<TokenLookupResult> {
   const normalizedPhone = normalizePhone(whatsapp);
