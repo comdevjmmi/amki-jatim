@@ -29,6 +29,20 @@ create table invited_guests (
 
 create index on invited_guests (is_claimed);
 
+-- Nomor WhatsApp dalam bentuk baku (0812.., +62 812.., 62812.. dianggap sama).
+create or replace function normalize_phone(raw text)
+returns text
+language sql
+immutable
+as $$
+  select case
+    when d = '' then ''
+    when d like '0%' then '62' || substr(d, 2)
+    else d
+  end
+  from (select regexp_replace(coalesce(raw, ''), '\D', '', 'g') as d) t;
+$$;
+
 -- 3. Peserta terdaftar (hasil registrasi publik).
 create table participants (
   id uuid primary key default gen_random_uuid(),
@@ -36,7 +50,7 @@ create table participants (
   invited_guest_id uuid references invited_guests(id) on delete set null,
   registration_type text not null check (registration_type in ('invited', 'representative')),
   nama_lengkap text not null,
-  email text not null,
+  email text not null default '',
   no_hp text not null,
   jabatan text not null,
   kategori text not null check (kategori in ('peserta_penuh', 'peninjau')),
@@ -44,9 +58,14 @@ create table participants (
   approved_at timestamptz,
   approved_by uuid references auth.users(id),
   created_at timestamptz not null default now(),
-  unique (email),
   unique (invited_guest_id)
 );
+
+-- Identitas peserta = nomor WhatsApp (email kampus dipakai banyak orang, jadi
+-- tidak unik). no_hp_norm dipakai /cek-token dan presensi untuk pencarian.
+alter table participants
+  add column no_hp_norm text generated always as (normalize_phone(no_hp)) stored;
+create unique index participants_no_hp_norm_key on participants (no_hp_norm);
 
 create index on participants (status);
 create index on participants (kategori);
@@ -265,11 +284,7 @@ begin
     raise exception 'INVALID_KATEGORI';
   end if;
 
-  if p_email is null or length(trim(p_email)) = 0 then
-    raise exception 'EMAIL_REQUIRED';
-  end if;
-
-  if p_no_hp is null or length(trim(p_no_hp)) = 0 then
+  if length(normalize_phone(p_no_hp)) < 9 then
     raise exception 'NO_HP_REQUIRED';
   end if;
 
@@ -331,7 +346,7 @@ begin
     email, no_hp, jabatan, kategori, status, approved_at
   ) values (
     p_invited_guest_id, v_masjid_kampus_id, p_registration_type, v_nama,
-    trim(p_email), trim(p_no_hp), v_jabatan, p_kategori, v_status,
+    coalesce(trim(p_email), ''), trim(p_no_hp), v_jabatan, p_kategori, v_status,
     case when v_status = 'approved' then now() end
   )
   returning * into v_participant;

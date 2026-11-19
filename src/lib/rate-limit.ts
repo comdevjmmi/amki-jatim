@@ -25,3 +25,10 @@ export function isRateLimited(key: string, windowMs: number, maxAttempts: number
   entry.count += 1;
   return entry.count > maxAttempts;
 }
+
+/** Same window state as isRateLimited, but read-only (doesn't count as an attempt). */
+export function isOverLimit(key: string, maxAttempts: number): boolean {
+  const entry = attemptsByKey.get(key);
+  if (!entry || Date.now() > entry.resetAt) return false;
+  return entry.count > maxAttempts;
+}

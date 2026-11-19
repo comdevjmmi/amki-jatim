@@ -20,17 +20,17 @@ export interface TokenLookupResult {
   usedAt?: string;
 }
 
-// Double-verification lookup, so brute-forcing is worth rate-limiting hard —
-// this is a data-matching endpoint, not a token-spending one, so the window
-// is tighter than castVote's.
+// The WhatsApp number is now the only factor, so anyone who knows a
+// participant's number can fetch their token — rate-limiting is what keeps
+// someone from sweeping number ranges. Tighter than castVote's window since
+// this is a data-matching endpoint, not a token-spending one.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_ATTEMPTS = 10;
 
-export async function safeTokenLookup(email: string, whatsapp: string): Promise<TokenLookupResult> {
-  const normalizedEmail = email.trim().toLowerCase();
+export async function safeTokenLookup(whatsapp: string): Promise<TokenLookupResult> {
   const normalizedPhone = normalizePhone(whatsapp);
-  if (!normalizedEmail || !normalizedPhone) {
-    return { status: "error", message: "Email dan Nomor WhatsApp wajib diisi." };
+  if (normalizedPhone.length < 9) {
+    return { status: "error", message: "Nomor WhatsApp wajib diisi." };
   }
 
   const ip = await clientIp();
@@ -39,10 +39,12 @@ export async function safeTokenLookup(email: string, whatsapp: string): Promise<
   }
 
   const supabase = createAdminClient();
+  // participants.no_hp_norm is a unique, generated copy of no_hp in the same
+  // normalized form as normalizePhone(), so this is an exact-match lookup.
   const { data: participant } = await supabase
     .from("participants")
     .select("id, nama_lengkap, no_hp, kategori, status, masjid_kampus(nama)")
-    .ilike("email", normalizedEmail)
+    .eq("no_hp_norm", normalizedPhone)
     .maybeSingle<{
       id: string;
       nama_lengkap: string;
@@ -52,11 +54,11 @@ export async function safeTokenLookup(email: string, whatsapp: string): Promise<
       masjid_kampus: { nama: string } | null;
     }>();
 
-  // Same generic message whether the email doesn't exist or the WhatsApp
-  // number doesn't match — this is the second verification factor, so a
-  // mismatch must not reveal which part was wrong.
-  if (!participant || normalizePhone(participant.no_hp) !== normalizedPhone) {
-    return { status: "not_found", message: "Data tidak ditemukan. Periksa kembali Email dan Nomor WhatsApp Anda." };
+  if (!participant) {
+    return {
+      status: "not_found",
+      message: "Nomor WhatsApp tidak ditemukan. Pastikan Anda sudah konfirmasi hadir di /register dengan nomor ini.",
+    };
   }
 
   const profile = {

@@ -134,11 +134,10 @@ export function ParticipantsTable({
                       </select>
                     </label>
                     <label className="flex flex-col gap-1.5 text-sm">
-                      <span className="font-medium text-text">Email</span>
+                      <span className="font-medium text-text">Email (opsional)</span>
                       <input
                         type="email"
                         name="email"
-                        required
                         defaultValue={p.email}
                         className="rounded-md border border-border bg-surface px-4 py-2.5 text-text outline-none focus:border-primary-500"
                       />

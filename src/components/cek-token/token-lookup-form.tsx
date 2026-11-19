@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { safeTokenLookup, type TokenLookupResult } from "@/app/cek-token/actions";
-import { maskEmail, maskPhone, normalizePhone } from "@/lib/mask";
+import { maskPhone, normalizePhone } from "@/lib/mask";
 import { Icon } from "@/components/landing/icon";
 
 export function TokenLookupForm() {
-  const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TokenLookupResult | null>(null);
@@ -17,7 +16,7 @@ export function TokenLookupForm() {
     e.preventDefault();
     setIsLoading(true);
     setCopied(false);
-    const r = await safeTokenLookup(email, whatsapp);
+    const r = await safeTokenLookup(whatsapp);
     setResult(r);
     setIsLoading(false);
   }
@@ -31,7 +30,6 @@ export function TokenLookupForm() {
     }
   }
 
-  const maskedEmail = maskEmail(email.trim().toLowerCase());
   const maskedPhone = maskPhone(normalizePhone(whatsapp));
 
   return (
@@ -42,17 +40,6 @@ export function TokenLookupForm() {
           className="rounded-lg border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
         >
           <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-text">Email</span>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@kampus.ac.id"
-              className="rounded-md border border-border bg-surface px-4 py-2.5 text-text outline-none focus:border-primary-500"
-            />
-          </label>
-          <label className="mt-4 flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-text">Nomor WhatsApp</span>
             <input
               type="tel"
@@ -91,7 +78,7 @@ export function TokenLookupForm() {
             <p className="font-semibold text-text">{result.profile?.nama}</p>
             <p className="text-text-muted">{result.profile?.kampus}</p>
             <p className="mt-1 text-xs text-text-muted">
-              {maskedEmail} &middot; {maskedPhone}
+              {maskedPhone}
             </p>
           </div>
 

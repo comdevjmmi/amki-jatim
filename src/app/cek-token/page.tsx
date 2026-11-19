@@ -19,7 +19,7 @@ export default function CekTokenPage() {
             Pemeriksaan Hak Suara &amp; Token Pemilih
           </h1>
           <p className="mt-2 text-sm text-text-muted">
-            Masukkan Email dan Nomor WhatsApp yang Anda gunakan saat registrasi untuk memeriksa
+            Masukkan Nomor WhatsApp yang Anda gunakan saat konfirmasi hadir untuk memeriksa
             hak suara Anda.
           </p>
         </div>

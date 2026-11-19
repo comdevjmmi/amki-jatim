@@ -14,33 +14,30 @@ export function RegistrationForm() {
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
   const [email, setEmail] = useState("");
   const [noHp, setNoHp] = useState("");
-  const [prefillStatus, setPrefillStatus] = useState<"idle" | "loading" | "filled" | "shared-email">("idle");
+  const [hint, setHint] = useState<{ status: "idle" | "loading" | "ready"; noHpMasked?: string | null; emailMasked?: string | null }>({
+    status: "idle",
+  });
 
-  // Picking a name pre-fills WhatsApp/email from what panitia stored, so the
-  // guest only has to review (and correct) them before confirming.
+  // Picking a name fetches *masked* hints of what panitia stored (e.g.
+  // 0812****7890). The guest types the full number themselves — that is also
+  // how the server verifies the person at the door owns it.
   async function handleSelectGuest(guest: InvitedGuestOption | null) {
     setSelectedGuest(guest);
     setEmail("");
     setNoHp("");
-    setPrefillStatus("idle");
+    setHint({ status: "idle" });
     if (!guest || guest.isPresent) return;
 
-    setPrefillStatus("loading");
+    setHint({ status: "loading" });
     const prefill = await getGuestPrefill(guest.id);
-    if (!prefill) {
-      setPrefillStatus("idle");
-      return;
-    }
-    setEmail(prefill.email);
-    setNoHp(prefill.noHp);
-    setPrefillStatus(prefill.emailShared ? "shared-email" : "filled");
+    setHint({ status: "ready", noHpMasked: prefill?.noHpMasked, emailMasked: prefill?.emailMasked });
   }
 
   function switchType(next: RegistrationType) {
     setRegistrationType(next);
     setEmail("");
     setNoHp("");
-    setPrefillStatus("idle");
+    setHint({ status: "idle" });
     if (next === "representative") setSelectedGuest(null);
   }
 
@@ -116,9 +113,8 @@ export function RegistrationForm() {
             onNotFound={() => switchType("representative")}
           />
           <p className="mt-2 text-xs text-text-muted">
-            Pilih nama Anda, periksa email &amp; WhatsApp yang terisi otomatis (boleh diubah
-            jika kurang tepat), lalu tekan Konfirmasi Hadir. Nama yang sudah hadir ditandai
-            beserta jam kedatangannya.
+            Pilih nama Anda, ketik nomor WhatsApp lengkap Anda untuk konfirmasi, lalu tekan
+            Konfirmasi Hadir. Nama yang sudah hadir ditandai beserta jam kedatangannya.
           </p>
         </section>
       ) : (
@@ -147,38 +143,49 @@ export function RegistrationForm() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          required
-          value={email}
-          onChange={setEmail}
-          disabled={prefillStatus === "loading"}
-        />
-        <Field
-          label="Nomor WhatsApp"
-          name="noHp"
-          type="tel"
-          required
-          value={noHp}
-          onChange={setNoHp}
-          disabled={prefillStatus === "loading"}
-        />
-        {prefillStatus === "loading" && (
-          <p className="text-xs text-text-muted sm:col-span-2">Mengambil data Anda...</p>
-        )}
-        {prefillStatus === "filled" && (
-          <p className="text-xs text-text-muted sm:col-span-2">
-            Data terisi dari daftar panitia. Perubahan yang Anda buat akan menggantikan data lama.
-          </p>
-        )}
-        {prefillStatus === "shared-email" && (
-          <p className="text-xs text-amber-700 sm:col-span-2">
-            Email di daftar panitia dipakai bersama peserta lain, jadi tidak diisi otomatis.
-            Mohon isi email pribadi Anda.
-          </p>
-        )}
+        <div className="flex flex-col gap-1.5">
+          <Field
+            label="Nomor WhatsApp"
+            name="noHp"
+            type="tel"
+            required
+            placeholder="08xxxxxxxxxx"
+            value={noHp}
+            onChange={setNoHp}
+            disabled={hint.status === "loading"}
+          />
+          {registrationType === "invited" && hint.status === "loading" && (
+            <p className="text-xs text-text-muted">Mengambil data Anda...</p>
+          )}
+          {registrationType === "invited" && hint.status === "ready" && (
+            <p className="text-xs text-text-muted">
+              {hint.noHpMasked ? (
+                <>
+                  Nomor terdaftar: <span className="font-mono font-semibold">{hint.noHpMasked}</span>.
+                  Ketik nomor lengkap Anda.
+                </>
+              ) : (
+                "Nomor Anda belum ada di data panitia. Isi nomor WhatsApp aktif Anda."
+              )}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Field
+            label="Email (opsional)"
+            name="email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            disabled={hint.status === "loading"}
+          />
+          {registrationType === "invited" && hint.status === "ready" && hint.emailMasked && (
+            <p className="text-xs text-text-muted">
+              Email terdaftar: <span className="font-mono">{hint.emailMasked}</span>. Kosongkan
+              untuk tetap memakai email ini.
+            </p>
+          )}
+        </div>
       </section>
 
       {state.status === "error" && (

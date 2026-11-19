@@ -47,16 +47,14 @@ export async function checkInSelf(sessionId: string, whatsapp: string): Promise<
     return { status: "session_closed", message: "Presensi untuk sesi ini belum dibuka oleh panitia." };
   }
 
-  // no_hp isn't unique/normalized in the DB (free-text at registration), so
-  // matching happens in-memory against the approved list — a few hundred
-  // rows at most for this event, well within a single query's cost.
-  const { data: participants } = await supabase
+  // participants.no_hp_norm is a unique, generated normalized copy of no_hp,
+  // so the number identifies exactly one participant.
+  const { data: participant } = await supabase
     .from("participants")
     .select("id, nama_lengkap, no_hp, masjid_kampus(nama)")
     .eq("status", "approved")
-    .returns<ParticipantRow[]>();
-
-  const participant = (participants ?? []).find((p) => normalizePhone(p.no_hp) === normalizedPhone);
+    .eq("no_hp_norm", normalizedPhone)
+    .maybeSingle<ParticipantRow>();
 
   if (!participant) {
     return {

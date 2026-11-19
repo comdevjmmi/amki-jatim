@@ -46,8 +46,8 @@ export async function updateParticipant(formData: FormData): Promise<UpdateParti
   const email = readField(formData, "email");
   const noHp = readField(formData, "noHp");
 
-  if (typeof id !== "string" || !namaLengkap || !jabatan || !email || !noHp) {
-    return { status: "error", message: "Semua field wajib diisi." };
+  if (typeof id !== "string" || !namaLengkap || !jabatan || !noHp) {
+    return { status: "error", message: "Nama, jabatan, dan nomor WhatsApp wajib diisi." };
   }
   if (kategori !== "peserta_penuh" && kategori !== "peninjau") {
     return { status: "error", message: "Kategori tidak valid." };
@@ -61,7 +61,7 @@ export async function updateParticipant(formData: FormData): Promise<UpdateParti
       jabatan,
       kategori,
       masjid_kampus_id: masjidKampusId,
-      email,
+      email: email ?? "",
       no_hp: noHp,
     })
     .eq("id", id);
@@ -69,7 +69,7 @@ export async function updateParticipant(formData: FormData): Promise<UpdateParti
   if (error) {
     return {
       status: "error",
-      message: error.code === "23505" ? "Email ini sudah dipakai peserta lain." : error.message,
+      message: error.code === "23505" ? "Nomor WhatsApp ini sudah dipakai peserta lain." : error.message,
     };
   }
 
