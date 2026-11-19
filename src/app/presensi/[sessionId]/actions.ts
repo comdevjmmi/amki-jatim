@@ -1,6 +1,5 @@
 "use server";
 
-import { maskName, normalizePhone } from "@/lib/mask";
 import { clientIp, isOverLimit, isRateLimited } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -11,22 +10,23 @@ export interface CheckinResult {
   checkedInAt?: string;
 }
 
-// Only lookups for an unregistered number count: everyone scans the QR at the
-// same moment from the same venue WiFi address, and each of those succeeds.
+// Only invalid lookups count: everyone scans the QR at the same moment from
+// the same venue WiFi address, and each of those succeeds.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX_FAILURES = 90;
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface ParticipantRow {
   id: string;
   nama_lengkap: string;
-  no_hp: string;
   masjid_kampus: { nama: string } | null;
 }
 
-export async function checkInSelf(sessionId: string, whatsapp: string): Promise<CheckinResult> {
-  const normalizedPhone = normalizePhone(whatsapp);
-  if (!normalizedPhone) {
-    return { status: "error", message: "Nomor WhatsApp wajib diisi." };
+/** Marks the participant picked from the name search as present for the session. */
+export async function checkInSelf(sessionId: string, participantId: string): Promise<CheckinResult> {
+  if (!UUID_PATTERN.test(sessionId) || !UUID_PATTERN.test(participantId)) {
+    return { status: "error", message: "Pilih nama Anda dari daftar." };
   }
 
   const failureKey = `presensi:${await clientIp()}`;
@@ -49,25 +49,23 @@ export async function checkInSelf(sessionId: string, whatsapp: string): Promise<
     return { status: "session_closed", message: "Presensi untuk sesi ini belum dibuka oleh panitia." };
   }
 
-  // participants.no_hp_norm is a unique, generated normalized copy of no_hp,
-  // so the number identifies exactly one participant.
   const { data: participant } = await supabase
     .from("participants")
-    .select("id, nama_lengkap, no_hp, masjid_kampus(nama)")
+    .select("id, nama_lengkap, masjid_kampus(nama)")
+    .eq("id", participantId)
     .eq("status", "approved")
-    .eq("no_hp_norm", normalizedPhone)
     .maybeSingle<ParticipantRow>();
 
   if (!participant) {
     isRateLimited(failureKey, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_FAILURES);
     return {
       status: "not_found",
-      message: "Nomor WhatsApp tidak ditemukan. Pastikan Anda sudah terdaftar dan disetujui panitia.",
+      message: "Nama tidak ditemukan atau belum disetujui panitia. Hubungi panitia jika ini keliru.",
     };
   }
 
   const profile = {
-    nama: maskName(participant.nama_lengkap),
+    nama: participant.nama_lengkap,
     kampus: participant.masjid_kampus?.nama ?? "-",
   };
 

@@ -423,3 +423,35 @@ grant execute on function cast_vote(text, uuid) to service_role;
 -- Semua operasi admin lain (approve/reject peserta, generate token, CRUD
 -- kandidat, kelola sesi & presensi, toggle voting) dilakukan lewat server
 -- actions dengan service role key, yang bypass RLS.
+
+-- Pencarian nama untuk presensi sesi (publik, hanya nama/kampus/jam presensi).
+create or replace function search_presensi(p_session_id uuid, p_query text)
+returns table (id uuid, nama_lengkap text, campus_name text, checked_in_at timestamptz)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_pattern text;
+begin
+  if p_query is null or length(trim(p_query)) < 2 then
+    return;
+  end if;
+
+  v_pattern := '%' || regexp_replace(trim(p_query), '([\\%_])', '\\\1', 'g') || '%';
+
+  return query
+    select p.id, p.nama_lengkap, coalesce(mk.nama, '-'), a.checked_in_at
+    from participants p
+    left join masjid_kampus mk on mk.id = p.masjid_kampus_id
+    left join session_attendances a on a.participant_id = p.id and a.session_id = p_session_id
+    where p.status = 'approved'
+      and (p.nama_lengkap ilike v_pattern or coalesce(mk.nama, '') ilike v_pattern)
+    order by p.nama_lengkap
+    limit 8;
+end;
+$$;
+
+revoke all on function search_presensi(uuid, text) from public;
+grant execute on function search_presensi(uuid, text) to anon, authenticated;

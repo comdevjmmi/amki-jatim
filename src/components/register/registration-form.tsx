@@ -1,14 +1,20 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
-import Link from "next/link";
 import { getGuestPrefill, registerParticipant, type RegisterState } from "@/app/register/actions";
 import { InvitedGuestCombobox } from "./invited-guest-combobox";
 import type { InvitedGuestOption, RegistrationType } from "@/lib/types";
 
 const INITIAL_STATE: RegisterState = { status: "idle" };
 
+// Remounting the inner form with a new key is how "back to registration"
+// clears everything for the next person without reloading the page.
 export function RegistrationForm() {
+  const [formKey, setFormKey] = useState(0);
+  return <RegistrationFormInner key={formKey} onReset={() => setFormKey((key) => key + 1)} />;
+}
+
+function RegistrationFormInner({ onReset }: { onReset: () => void }) {
   const [state, formAction, isPending] = useActionState(registerParticipant, INITIAL_STATE);
   const [registrationType, setRegistrationType] = useState<RegistrationType>("invited");
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
@@ -66,9 +72,13 @@ export function RegistrationForm() {
           {isInvited ? "Hadir" : "Menunggu Verifikasi"}
         </span>
         <div className="mt-6">
-          <Link href="/" className="text-sm font-medium text-primary-700 hover:underline">
-            Kembali ke Beranda
-          </Link>
+          <button
+            type="button"
+            onClick={onReset}
+            className="text-sm font-medium text-primary-700 hover:underline"
+          >
+            Kembali ke Halaman Registrasi
+          </button>
         </div>
       </div>
     );

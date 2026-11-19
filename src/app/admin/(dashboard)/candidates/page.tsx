@@ -1,8 +1,7 @@
-import { CandidateFields } from "@/components/admin/candidate-fields";
+import { AddCandidateForm } from "@/components/admin/add-candidate-form";
 import { CandidateRow } from "@/components/admin/candidate-row";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { Candidate } from "@/lib/types";
-import { upsertCandidate } from "./actions";
 
 export default async function AdminCandidatesPage() {
   const supabase = createAdminClient();
@@ -25,15 +24,7 @@ export default async function AdminCandidatesPage() {
         <summary className="cursor-pointer select-none px-6 py-4 text-sm font-semibold text-text">
           + Tambah Kandidat Baru
         </summary>
-        <form action={upsertCandidate} className="flex flex-col gap-4 border-t border-border p-6">
-          <CandidateFields />
-          <button
-            type="submit"
-            className="w-fit rounded-full bg-primary-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600"
-          >
-            Simpan Kandidat
-          </button>
-        </form>
+        <AddCandidateForm />
       </details>
 
       {error && (
@@ -49,7 +40,7 @@ export default async function AdminCandidatesPage() {
               <th className="px-4 py-3 font-semibold">No.</th>
               <th className="px-4 py-3 font-semibold">Nama</th>
               <th className="px-4 py-3 font-semibold">Asal Kampus</th>
-              <th className="px-4 py-3 font-semibold">Visi &amp; Misi</th>
+              <th className="px-4 py-3 font-semibold">Keterangan Tambahan</th>
               <th className="px-4 py-3 font-semibold">Aksi</th>
             </tr>
           </thead>
