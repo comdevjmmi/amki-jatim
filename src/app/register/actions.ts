@@ -1,8 +1,8 @@
 "use server";
 
 import { parseGuestContact } from "@/lib/guest-contact";
-import { maskEmail, maskPhone, normalizePhone } from "@/lib/mask";
-import { clientIp, isOverLimit, isRateLimited } from "@/lib/rate-limit";
+import { maskEmail } from "@/lib/mask";
+import { clientIp, isRateLimited } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { RegistrationType } from "@/lib/types";
 
@@ -11,19 +11,17 @@ export interface RegisterState {
   message?: string;
 }
 
-/** Masked hints only — the full number/email never leaves the server. */
+/** WhatsApp number to pre-fill, plus a masked hint of the stored email. */
 export interface GuestPrefill {
-  noHpMasked: string | null;
+  noHp: string | null;
   emailMasked: string | null;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const WINDOW_MS = 10 * 60 * 1000;
-const PREFILL_MAX_ATTEMPTS = 60;
-// Wrong-number attempts on the invited path, per IP. Only failures count, so
-// a hall full of people behind one WiFi address isn't throttled by
-// legitimate check-ins.
-const VERIFY_MAX_FAILURES = 15;
+// Every check-in at the hall makes one prefill call, and the whole venue can
+// share one public IP, so this has to leave room for the registration rush.
+const PREFILL_MAX_ATTEMPTS = 120;
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVITED_GUEST_REQUIRED: "Silakan pilih nama Anda dari daftar tamu undangan.",
@@ -44,11 +42,11 @@ function readField(formData: FormData, key: string): string | null {
 }
 
 /**
- * Masked hints (0812****7890, b***@kampus.ac.id) for the guest picked in the
- * check-in form. The guest has to type their full number themselves, which
- * is also how ownership of the number is verified. Rate-limited per IP since
- * guest ids are visible in the public search; only returns data for guests
- * who haven't checked in yet.
+ * Stored WhatsApp number (to pre-fill) and a masked email hint for the guest
+ * picked in the check-in form. The guest reviews and can correct them; panitia
+ * verify identity in person at the entrance. Rate-limited per IP since guest
+ * ids are visible in the public search; only returns data for guests who
+ * haven't checked in yet.
  */
 export async function getGuestPrefill(guestId: string): Promise<GuestPrefill | null> {
   if (!UUID_PATTERN.test(guestId)) return null;
@@ -67,7 +65,7 @@ export async function getGuestPrefill(guestId: string): Promise<GuestPrefill | n
 
   const { phone, email } = parseGuestContact(guest.contact);
   return {
-    noHpMasked: phone ? maskPhone(phone.replace(/\D/g, "")) : null,
+    noHp: phone || null,
     emailMasked: email ? maskEmail(email) : null,
   };
 }
@@ -97,32 +95,12 @@ export async function registerParticipant(
       return { status: "error", message: ERROR_MESSAGES.INVITED_GUEST_REQUIRED };
     }
 
-    const ip = await clientIp();
-    const verifyKey = `register-verify:${ip}`;
-    if (isOverLimit(verifyKey, VERIFY_MAX_FAILURES)) {
-      return { status: "error", message: "Terlalu banyak percobaan. Silakan tunggu beberapa menit dan coba lagi." };
-    }
-
     const { data: guest } = await supabase
       .from("invited_guests")
       .select("contact")
       .eq("id", invitedGuestId)
       .maybeSingle();
     const stored = parseGuestContact(guest?.contact);
-
-    // Checking in as an invited guest is open to anyone who can pick the
-    // name, so the number panitia stored has to be typed in full — that is
-    // what proves the person at the door owns it (and, since the token is
-    // fetched by number, that nobody else can claim this guest's vote). A
-    // guest with no stored number can't be verified and just enters one.
-    if (stored.phone && (!noHp || normalizePhone(noHp) !== normalizePhone(stored.phone))) {
-      isRateLimited(verifyKey, WINDOW_MS, VERIFY_MAX_FAILURES);
-      return {
-        status: "error",
-        message:
-          "Nomor WhatsApp tidak cocok dengan data panitia. Ketik nomor lengkap sesuai petunjuk di atas. Jika nomor Anda sudah berganti, hubungi panitia untuk memperbaruinya.",
-      };
-    }
 
     // Email is optional; if left blank, keep the one panitia already has.
     email = email ?? (stored.email || null);

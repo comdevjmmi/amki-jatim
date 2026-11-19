@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server";
 import { maskName, normalizePhone } from "@/lib/mask";
-import { clientIp, isRateLimited } from "@/lib/rate-limit";
+import { clientIp, isOverLimit, isRateLimited } from "@/lib/rate-limit";
 import { generateVoteToken, hashVoteToken } from "@/lib/vote-token";
 
 export interface TokenLookupResult {
@@ -20,12 +20,12 @@ export interface TokenLookupResult {
   usedAt?: string;
 }
 
-// The WhatsApp number is now the only factor, so anyone who knows a
-// participant's number can fetch their token — rate-limiting is what keeps
-// someone from sweeping number ranges. Tighter than castVote's window since
-// this is a data-matching endpoint, not a token-spending one.
+// The WhatsApp number is the only factor, so rate-limiting is what keeps
+// someone from sweeping number ranges. Only *failed* lookups (number not
+// registered) count: a hall full of voters on one WiFi address all succeed
+// and must not throttle each other, while a sweep is almost all failures.
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const RATE_LIMIT_MAX_ATTEMPTS = 10;
+const RATE_LIMIT_MAX_FAILURES = 15;
 
 export async function safeTokenLookup(whatsapp: string): Promise<TokenLookupResult> {
   const normalizedPhone = normalizePhone(whatsapp);
@@ -33,8 +33,8 @@ export async function safeTokenLookup(whatsapp: string): Promise<TokenLookupResu
     return { status: "error", message: "Nomor WhatsApp wajib diisi." };
   }
 
-  const ip = await clientIp();
-  if (isRateLimited(`cek-token:${ip}`, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_ATTEMPTS)) {
+  const failureKey = `cek-token:${await clientIp()}`;
+  if (isOverLimit(failureKey, RATE_LIMIT_MAX_FAILURES)) {
     return { status: "rate_limited", message: "Terlalu banyak percobaan. Silakan tunggu beberapa menit dan coba lagi." };
   }
 
@@ -55,6 +55,7 @@ export async function safeTokenLookup(whatsapp: string): Promise<TokenLookupResu
     }>();
 
   if (!participant) {
+    isRateLimited(failureKey, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_FAILURES);
     return {
       status: "not_found",
       message: "Nomor WhatsApp tidak ditemukan. Pastikan Anda sudah konfirmasi hadir di /register dengan nomor ini.",

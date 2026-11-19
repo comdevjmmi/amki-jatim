@@ -14,13 +14,12 @@ export function RegistrationForm() {
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
   const [email, setEmail] = useState("");
   const [noHp, setNoHp] = useState("");
-  const [hint, setHint] = useState<{ status: "idle" | "loading" | "ready"; noHpMasked?: string | null; emailMasked?: string | null }>({
+  const [hint, setHint] = useState<{ status: "idle" | "loading" | "ready"; noHp?: string | null; emailMasked?: string | null }>({
     status: "idle",
   });
 
-  // Picking a name fetches *masked* hints of what panitia stored (e.g.
-  // 0812****7890). The guest types the full number themselves — that is also
-  // how the server verifies the person at the door owns it.
+  // Picking a name pre-fills the WhatsApp number panitia stored; the guest
+  // reviews it and can correct it before confirming.
   async function handleSelectGuest(guest: InvitedGuestOption | null) {
     setSelectedGuest(guest);
     setEmail("");
@@ -30,7 +29,8 @@ export function RegistrationForm() {
 
     setHint({ status: "loading" });
     const prefill = await getGuestPrefill(guest.id);
-    setHint({ status: "ready", noHpMasked: prefill?.noHpMasked, emailMasked: prefill?.emailMasked });
+    setNoHp(prefill?.noHp ?? "");
+    setHint({ status: "ready", noHp: prefill?.noHp, emailMasked: prefill?.emailMasked });
   }
 
   function switchType(next: RegistrationType) {
@@ -113,8 +113,9 @@ export function RegistrationForm() {
             onNotFound={() => switchType("representative")}
           />
           <p className="mt-2 text-xs text-text-muted">
-            Pilih nama Anda, ketik nomor WhatsApp lengkap Anda untuk konfirmasi, lalu tekan
-            Konfirmasi Hadir. Nama yang sudah hadir ditandai beserta jam kedatangannya.
+            Pilih nama Anda, periksa nomor WhatsApp yang terisi otomatis (ubah jika kurang tepat),
+            lalu tekan Konfirmasi Hadir. Nama yang sudah hadir ditandai beserta jam
+            kedatangannya.
           </p>
         </section>
       ) : (
@@ -159,14 +160,9 @@ export function RegistrationForm() {
           )}
           {registrationType === "invited" && hint.status === "ready" && (
             <p className="text-xs text-text-muted">
-              {hint.noHpMasked ? (
-                <>
-                  Nomor terdaftar: <span className="font-mono font-semibold">{hint.noHpMasked}</span>.
-                  Ketik nomor lengkap Anda.
-                </>
-              ) : (
-                "Nomor Anda belum ada di data panitia. Isi nomor WhatsApp aktif Anda."
-              )}
+              {hint.noHp
+                ? "Terisi dari data panitia. Ubah jika nomor Anda sudah berganti."
+                : "Nomor Anda belum ada di data panitia. Isi nomor WhatsApp aktif Anda."}
             </p>
           )}
         </div>
