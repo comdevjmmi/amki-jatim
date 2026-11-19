@@ -15,6 +15,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
   const [results, setResults] = useState<InvitedGuestOption[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +50,11 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
         .limit(8);
 
       if (!cancelled) {
+        // A failed query (e.g. view/grant missing in the database) must not
+        // look like "name not found" — that sent real guests to the
+        // new-delegate form instead of surfacing the outage.
+        if (error) console.error("invited_guests_public search failed:", error);
+        setSearchFailed(Boolean(error));
         setResults(
           error || !data
             ? []
@@ -114,7 +120,13 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
             <p className="px-4 py-3 text-sm text-text-muted">Mencari...</p>
           )}
 
-          {!isSearching && results.length === 0 && (
+          {!isSearching && searchFailed && (
+            <p className="px-4 py-3 text-sm text-rose-700">
+              Daftar tamu undangan gagal dimuat. Coba lagi sebentar lagi atau hubungi panitia.
+            </p>
+          )}
+
+          {!isSearching && !searchFailed && results.length === 0 && (
             <div className="px-4 py-3">
               <p className="text-sm text-text-muted">
                 Nama tidak ditemukan di daftar tamu undangan.
@@ -133,6 +145,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
           )}
 
           {!isSearching &&
+            !searchFailed &&
             results.map((guest) => (
               <button
                 key={guest.id}
