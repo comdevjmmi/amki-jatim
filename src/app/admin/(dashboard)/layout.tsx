@@ -1,4 +1,4 @@
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { logoutAdmin } from "./actions";
 
 // Admin pages read live data with the service-role client and are gated by
@@ -9,10 +9,5 @@ import { logoutAdmin } from "./actions";
 export const dynamic = "force-dynamic";
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/50">
-      <AdminSidebar logoutAction={logoutAdmin} />
-      <main className="h-screen flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
-    </div>
-  );
+  return <AdminShell logoutAction={logoutAdmin}>{children}</AdminShell>;
 }
