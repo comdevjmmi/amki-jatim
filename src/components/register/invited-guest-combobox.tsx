@@ -44,22 +44,23 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
       const supabase = createClient();
       const term = query.trim();
       const filter = `full_name.ilike.%${term}%,campus_name.ilike.%${term}%`;
-      let { data, error } = await supabase
+      type GuestRow = { id: string; full_name: string; campus_name: string; title: string; is_claimed?: boolean };
+      let { data, error } = (await supabase
         .from("invited_guests_public")
         .select("id, full_name, campus_name, title, is_claimed")
         .or(filter)
-        .limit(8);
+        .limit(8)) as { data: GuestRow[] | null; error: { message: string } | null };
 
       // Until supabase/migrations/2026-11-19-invited-guests-public-claimed.sql
       // has been applied, the view has no is_claimed column. Fall back to the
       // old shape (which only ever contained unclaimed guests) so search keeps
       // working during the deploy/migration gap.
       if (error && /is_claimed/.test(error.message)) {
-        ({ data, error } = await supabase
+        ({ data, error } = (await supabase
           .from("invited_guests_public")
           .select("id, full_name, campus_name, title")
           .or(filter)
-          .limit(8));
+          .limit(8)) as { data: GuestRow[] | null; error: { message: string } | null });
       }
 
       if (!cancelled) {
