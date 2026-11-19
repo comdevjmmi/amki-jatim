@@ -14,18 +14,28 @@ export function RegistrationForm() {
   const [selectedGuest, setSelectedGuest] = useState<InvitedGuestOption | null>(null);
 
   if (state.status === "success") {
+    const isInvited = registrationType === "invited";
     return (
       <div className="rounded-lg border border-border bg-surface p-8 text-center shadow-[var(--shadow-card)]">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100">
           <span className="text-2xl text-primary-700">✓</span>
         </div>
-        <h2 className="text-xl font-bold text-text">Registrasi Terkirim!</h2>
+        <h2 className="text-xl font-bold text-text">
+          {isInvited ? "Kehadiran Tercatat" : "Registrasi Terkirim!"}
+        </h2>
         <p className="mt-2 text-sm text-text-muted">
-          Data Anda sedang diverifikasi oleh panitia. Status verifikasi akan
-          dikirim ke email/WhatsApp yang Anda daftarkan.
+          {isInvited
+            ? `Selamat datang di Rakerwil II PW AMKI Jawa Timur${
+                selectedGuest ? `, ${selectedGuest.fullName}` : ""
+              }. Silakan memasuki hall.`
+            : "Data Anda sedang diverifikasi oleh panitia. Silakan menuju meja panitia untuk konfirmasi."}
         </p>
-        <span className="mt-4 inline-block rounded-full bg-accent-100 px-4 py-1 text-xs font-semibold text-accent-700">
-          Menunggu Verifikasi
+        <span
+          className={`mt-4 inline-block rounded-full px-4 py-1 text-xs font-semibold ${
+            isInvited ? "bg-emerald-100 text-emerald-700" : "bg-accent-100 text-accent-700"
+          }`}
+        >
+          {isInvited ? "Hadir" : "Menunggu Verifikasi"}
         </span>
         <div className="mt-6">
           <Link href="/" className="text-sm font-medium text-primary-700 hover:underline">
@@ -75,8 +85,8 @@ export function RegistrationForm() {
             onNotFound={() => setRegistrationType("representative")}
           />
           <p className="mt-2 text-xs text-text-muted">
-            Nama, jabatan, dan asal kampus akan otomatis terisi sesuai data
-            panitia.
+            Pilih nama Anda, lengkapi email & WhatsApp, lalu tekan Konfirmasi
+            Hadir. Nama yang sudah hadir ditandai beserta jam kedatangannya.
           </p>
         </section>
       ) : (
@@ -104,7 +114,11 @@ export function RegistrationForm() {
         disabled={isPending || (registrationType === "invited" && !selectedGuest)}
         className="w-full rounded-full bg-primary-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "Mengirim..." : "Kirim Registrasi"}
+        {isPending
+          ? "Mengirim..."
+          : registrationType === "invited"
+            ? "Konfirmasi Hadir"
+            : "Kirim Registrasi"}
       </button>
     </form>
   );

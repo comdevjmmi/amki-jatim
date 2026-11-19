@@ -43,31 +43,40 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
 
       const supabase = createClient();
       const term = query.trim();
+      type LookupRow = {
+        id: string;
+        full_name: string;
+        campus_name: string;
+        title: string;
+        is_present?: boolean;
+        present_at?: string | null;
+      };
+      type LookupResult = { data: LookupRow[] | null; error: { message: string } | null };
       const filter = `full_name.ilike.%${term}%,campus_name.ilike.%${term}%`;
-      type GuestRow = { id: string; full_name: string; campus_name: string; title: string; is_claimed?: boolean };
-      let { data, error } = (await supabase
-        .from("invited_guests_public")
-        .select("id, full_name, campus_name, title, is_claimed")
-        .or(filter)
-        .limit(8)) as { data: GuestRow[] | null; error: { message: string } | null };
 
-      // Until supabase/migrations/2026-11-19-invited-guests-public-claimed.sql
-      // has been applied, the view has no is_claimed column. Fall back to the
-      // old shape (which only ever contained unclaimed guests) so search keeps
-      // working during the deploy/migration gap.
-      if (error && /is_claimed/.test(error.message)) {
+      let { data, error } = (await supabase
+        .from("register_lookup")
+        .select("id, full_name, campus_name, title, is_present, present_at")
+        .or(filter)
+        .order("full_name")
+        .limit(8)) as LookupResult;
+
+      // Until supabase/migrations/2026-11-19-register-checkin.sql has been
+      // applied, register_lookup doesn't exist. Fall back to the old view
+      // (unclaimed invited guests only) so search keeps working in the gap.
+      if (error) {
+        console.warn("register_lookup unavailable, falling back:", error.message);
         ({ data, error } = (await supabase
           .from("invited_guests_public")
           .select("id, full_name, campus_name, title")
           .or(filter)
-          .limit(8)) as { data: GuestRow[] | null; error: { message: string } | null });
+          .limit(8)) as LookupResult);
       }
 
       if (!cancelled) {
-        // A failed query (e.g. view/grant missing in the database) must not
-        // look like "name not found" — that sent real guests to the
-        // new-delegate form instead of surfacing the outage.
-        if (error) console.error("invited_guests_public search failed:", error);
+        // A failed query must not look like "name not found" — that would
+        // send real guests to the new-delegate form instead of surfacing it.
+        if (error) console.error("guest search failed:", error);
         setSearchFailed(Boolean(error));
         setResults(
           error || !data
@@ -77,7 +86,8 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
                 fullName: row.full_name,
                 campusName: row.campus_name,
                 title: row.title,
-                isClaimed: row.is_claimed === true,
+                isPresent: row.is_present === true,
+                presentAt: row.present_at ?? null,
               })),
         );
         setIsSearching(false);
@@ -125,7 +135,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
-        placeholder="Cari nama Anda di daftar tamu undangan..."
+        placeholder="Ketik nama atau asal kampus Anda..."
         className="w-full rounded-md border border-border bg-surface px-4 py-2.5 text-sm text-text outline-none focus:border-primary-500"
       />
 
@@ -144,7 +154,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
           {!isSearching && !searchFailed && results.length === 0 && (
             <div className="px-4 py-3">
               <p className="text-sm text-text-muted">
-                Nama tidak ditemukan di daftar tamu undangan.
+                Nama tidak ditemukan di daftar peserta.
               </p>
               <button
                 type="button"
@@ -165,7 +175,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
               <button
                 key={guest.id}
                 type="button"
-                disabled={guest.isClaimed}
+                disabled={guest.isPresent}
                 onClick={() => {
                   onSelect(guest);
                   setIsOpen(false);
@@ -173,9 +183,10 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
                 className="block w-full px-4 py-2.5 text-left text-sm hover:bg-primary-50 disabled:cursor-default disabled:opacity-80 disabled:hover:bg-transparent"
               >
                 <p className="font-medium text-text">{guest.fullName}</p>
-                {guest.isClaimed && (
+                {guest.isPresent && (
                   <p className="mt-0.5 text-xs font-semibold text-emerald-700">
-                    ✓ Sudah selesai registrasi
+                    ✓ Sudah hadir
+                    {guest.presentAt && `, tercatat pukul ${formatJam(guest.presentAt)} WIB`}
                   </p>
                 )}
                 <p className="text-text-muted">
@@ -187,4 +198,10 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
       )}
     </div>
   );
+}
+
+function formatJam(iso: string): string {
+  return new Date(iso)
+    .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })
+    .replace(":", ".");
 }

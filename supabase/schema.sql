@@ -197,6 +197,37 @@ create or replace view invited_guests_public as
 
 grant select on invited_guests_public to anon, authenticated;
 
+-- 1. Satu sumber pencarian untuk wizard "Tamu Undangan Terdaftar":
+--    - semua tamu undangan (sudah hadir atau belum), dan
+--    - delegasi baru (jalur representative) yang sudah mendaftar, supaya
+--      mereka tidak mendaftar dua kali kalau kembali ke /register.
+--    Hanya nama, kampus, jabatan, dan jam hadir yang diekspos; email, nomor
+--    WA, dan kontak tetap privat.
+create or replace view register_lookup as
+  select
+    g.id,
+    g.full_name,
+    g.campus_name,
+    g.title,
+    g.is_claimed as is_present,
+    g.claimed_at as present_at,
+    'invited'::text as source
+  from invited_guests g
+  union all
+  select
+    p.id,
+    p.nama_lengkap,
+    coalesce(mk.nama, '-'),
+    p.jabatan,
+    true,
+    p.created_at,
+    'representative'::text
+  from participants p
+  left join masjid_kampus mk on mk.id = p.masjid_kampus_id
+  where p.registration_type = 'representative';
+
+grant select on register_lookup to anon, authenticated;
+
 -- Fungsi atomik untuk registrasi peserta. Mengunci & menandai invited_guest
 -- sebagai claimed (jika jalur "invited") dan insert participants dalam satu
 -- transaksi, sehingga dua orang tidak bisa mengklaim tamu undangan yang sama
@@ -224,6 +255,7 @@ declare
   v_masjid_kampus_id uuid;
   v_nama text;
   v_jabatan text;
+  v_status text;
 begin
   if p_registration_type not in ('invited', 'representative') then
     raise exception 'INVALID_REGISTRATION_TYPE';
@@ -257,6 +289,7 @@ begin
 
     v_nama := v_guest.full_name;
     v_jabatan := v_guest.title;
+    v_status := 'approved';
 
     select id into v_masjid_kampus_id
       from masjid_kampus
@@ -279,6 +312,7 @@ begin
 
     v_nama := trim(p_nama_lengkap);
     v_jabatan := coalesce(nullif(trim(p_jabatan), ''), '-');
+    v_status := 'pending';
 
     select id into v_masjid_kampus_id
       from masjid_kampus
@@ -294,10 +328,11 @@ begin
 
   insert into participants (
     invited_guest_id, masjid_kampus_id, registration_type, nama_lengkap,
-    email, no_hp, jabatan, kategori
+    email, no_hp, jabatan, kategori, status, approved_at
   ) values (
     p_invited_guest_id, v_masjid_kampus_id, p_registration_type, v_nama,
-    trim(p_email), trim(p_no_hp), v_jabatan, p_kategori
+    trim(p_email), trim(p_no_hp), v_jabatan, p_kategori, v_status,
+    case when v_status = 'approved' then now() end
   )
   returning * into v_participant;
 
