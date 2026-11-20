@@ -23,6 +23,9 @@ create table invited_guests (
   title text not null,
   contact text,
   kota text,
+  pic smallint check (pic between 1 and 7),
+  invite_status text not null default 'belum'
+    check (invite_status in ('belum', 'terkirim', 'dibalas', 'bermasalah')),
   is_claimed boolean not null default false,
   claimed_at timestamptz,
   created_at timestamptz not null default now()

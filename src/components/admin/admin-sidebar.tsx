@@ -4,9 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const NAV_ITEMS = [
+interface NavItem {
+  href: string;
+  icon: string;
+  label: string;
+  subCount?: number;
+  subLabel?: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/admin", icon: "👥", label: "Peserta Masuk" },
   { href: "/admin/invited-guests", icon: "📋", label: "Tamu Undangan" },
+  { href: "/admin/undangan-grup", icon: "💬", label: "Undangan Grup Peserta", subCount: 7, subLabel: "PIC" },
   { href: "/admin/sessions", icon: "📅", label: "Sesi Presensi" },
   { href: "/admin/candidates", icon: "🗳️", label: "Kandidat Ketua" },
   { href: "/admin/tokens", icon: "🔑", label: "Token Pemilih" },
@@ -58,8 +67,8 @@ export function AdminSidebar({
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (
+            <div key={item.href} className="flex flex-col gap-1">
             <Link
-              key={item.href}
               href={item.href}
               onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
@@ -71,6 +80,29 @@ export function AdminSidebar({
               <span className="text-base">{item.icon}</span>
               {item.label}
             </Link>
+            {item.subCount && active && (
+              <div className="ml-6 flex flex-col gap-0.5 border-l border-slate-200 pl-3">
+                {Array.from({ length: item.subCount }, (_, n) => n + 1).map((n) => {
+                  const href = `${item.href}/${n}`;
+                  const subActive = pathname === href;
+                  return (
+                    <Link
+                      key={n}
+                      href={href}
+                      onClick={onNavigate}
+                      className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                        subActive
+                          ? "bg-primary-50 font-semibold text-primary-700"
+                          : "text-text-muted hover:bg-slate-50 hover:text-text"
+                      }`}
+                    >
+                      {item.subLabel} {n}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+            </div>
           );
         })}
       </nav>

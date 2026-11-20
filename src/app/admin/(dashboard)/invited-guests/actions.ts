@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/admin-auth";
+import { PIC_COUNT } from "@/lib/group-invite";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export interface GuestActionResult {
@@ -14,6 +15,14 @@ function readField(formData: FormData, key: string): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.replace(/\s+/g, " ").trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+/** PIC dengan tamu paling sedikit, supaya tamu baru terbagi rata. */
+async function leastLoadedPic(supabase: ReturnType<typeof createAdminClient>): Promise<number> {
+  const { data } = await supabase.from("invited_guests").select("pic");
+  const counts = Array.from({ length: PIC_COUNT }, () => 0);
+  for (const row of data ?? []) if (row.pic) counts[row.pic - 1]++;
+  return counts.indexOf(Math.min(...counts)) + 1;
 }
 
 export async function updateInvitedGuest(formData: FormData): Promise<GuestActionResult> {
@@ -117,7 +126,7 @@ export async function createInvitedGuest(formData: FormData): Promise<GuestActio
 
   const { error } = await supabase
     .from("invited_guests")
-    .insert({ full_name: fullName, campus_name: campusName, title, contact, kota });
+    .insert({ full_name: fullName, campus_name: campusName, title, contact, kota, pic: await leastLoadedPic(supabase) });
   if (error) return { status: "error", message: error.message };
 
   revalidatePath("/admin/invited-guests");
