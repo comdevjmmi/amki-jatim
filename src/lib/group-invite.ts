@@ -16,9 +16,13 @@ export function isInviteStatus(value: unknown): value is InviteStatus {
   return INVITE_STATUSES.some((s) => s.value === value);
 }
 
-/** Template pesan undangan grup — ubah di sini kalau ada revisi teks. */
+/**
+ * Template pesan undangan grup — ubah di sini kalau ada revisi teks.
+ * Tanpa emoji: emoji (karakter 4-byte) sering rusak jadi "�" saat diteruskan
+ * lewat link wa.me di sebagian aplikasi/WhatsApp Web.
+ */
 export function buildInviteMessage(nama: string, institusi: string): string {
-  return `Assalamu'alaikum warahmatullahi wabarakatuh 🙏
+  return `Assalamu'alaikum warahmatullahi wabarakatuh
 
 Yth. ${nama}
 (${institusi})
@@ -31,7 +35,7 @@ ${GROUP_LINK}
 
 Mohon kesediaannya untuk bergabung ke grup tersebut ya. Apabila ada pertanyaan atau kendala, silakan hubungi kami melalui pesan ini.
 
-Atas perhatian dan kerja samanya, kami ucapkan terima kasih. Jazakumullahu khairan 🙏
+Atas perhatian dan kerja samanya, kami ucapkan terima kasih. Jazakumullahu khairan.
 
 Wassalamu'alaikum warahmatullahi wabarakatuh.
 Panitia Rakerwil II PW AMKI Jawa Timur`;
