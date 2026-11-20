@@ -36,7 +36,7 @@ export default async function InvitedGuestsPage({
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("invited_guests")
-    .select("id, full_name, campus_name, title, contact, is_claimed, claimed_at")
+    .select("id, full_name, campus_name, title, contact, kota, is_claimed, claimed_at")
     .order("full_name")
     .returns<InvitedGuestTableRow[]>();
 

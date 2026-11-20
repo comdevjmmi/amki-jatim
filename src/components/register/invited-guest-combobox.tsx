@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { formatJam } from "@/lib/format-time";
 import type { InvitedGuestOption } from "@/lib/types";
 
 interface Props {
@@ -48,30 +49,16 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
         full_name: string;
         campus_name: string;
         title: string;
-        is_present?: boolean;
-        present_at?: string | null;
+        is_present: boolean;
+        present_at: string | null;
+        source: "invited" | "representative";
       };
-      type LookupResult = { data: LookupRow[] | null; error: { message: string } | null };
-      const filter = `full_name.ilike.%${term}%,campus_name.ilike.%${term}%`;
-
-      let { data, error } = (await supabase
+      const { data, error } = (await supabase
         .from("register_lookup")
-        .select("id, full_name, campus_name, title, is_present, present_at")
-        .or(filter)
+        .select("id, full_name, campus_name, title, is_present, present_at, source")
+        .or(`full_name.ilike.%${term}%,campus_name.ilike.%${term}%`)
         .order("full_name")
-        .limit(8)) as LookupResult;
-
-      // Until supabase/migrations/2026-11-19-register-checkin.sql has been
-      // applied, register_lookup doesn't exist. Fall back to the old view
-      // (unclaimed invited guests only) so search keeps working in the gap.
-      if (error) {
-        console.warn("register_lookup unavailable, falling back:", error.message);
-        ({ data, error } = (await supabase
-          .from("invited_guests_public")
-          .select("id, full_name, campus_name, title")
-          .or(filter)
-          .limit(8)) as LookupResult);
-      }
+        .limit(8)) as { data: LookupRow[] | null; error: { message: string } | null };
 
       if (!cancelled) {
         // A failed query must not look like "name not found" — that would
@@ -88,6 +75,7 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
                 title: row.title,
                 isPresent: row.is_present === true,
                 presentAt: row.present_at ?? null,
+                source: row.source,
               })),
         );
         setIsSearching(false);
@@ -175,12 +163,11 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
               <button
                 key={guest.id}
                 type="button"
-                disabled={guest.isPresent}
                 onClick={() => {
                   onSelect(guest);
                   setIsOpen(false);
                 }}
-                className="block w-full px-4 py-2.5 text-left text-sm hover:bg-primary-50 disabled:cursor-default disabled:opacity-80 disabled:hover:bg-transparent"
+                className="block w-full px-4 py-2.5 text-left text-sm hover:bg-primary-50"
               >
                 <p className="font-medium text-text">{guest.fullName}</p>
                 {guest.isPresent && (
@@ -198,10 +185,4 @@ export function InvitedGuestCombobox({ selected, onSelect, onNotFound }: Props) 
       )}
     </div>
   );
-}
-
-function formatJam(iso: string): string {
-  return new Date(iso)
-    .toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" })
-    .replace(":", ".");
 }

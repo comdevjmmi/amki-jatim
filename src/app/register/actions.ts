@@ -1,7 +1,7 @@
 "use server";
 
 import { parseGuestContact } from "@/lib/guest-contact";
-import { maskEmail } from "@/lib/mask";
+import { maskEmail, maskPhone, normalizePhone } from "@/lib/mask";
 import { clientIp, isRateLimited } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { RegistrationType } from "@/lib/types";
@@ -11,17 +11,20 @@ export interface RegisterState {
   message?: string;
 }
 
-/** WhatsApp number to pre-fill, plus a masked hint of the stored email. */
-export interface GuestPrefill {
-  noHp: string | null;
+/** What panitia have on file for a guest, with WhatsApp/email masked. */
+export interface GuestInfo {
+  kampus: string;
+  kalangan: string;
+  kota: string | null;
+  noHpMasked: string | null;
   emailMasked: string | null;
 }
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const WINDOW_MS = 10 * 60 * 1000;
-// Every check-in at the hall makes one prefill call, and the whole venue can
+// Every check-in at the hall makes one info call, and the whole venue can
 // share one public IP, so this has to leave room for the registration rush.
-const PREFILL_MAX_ATTEMPTS = 120;
+const INFO_MAX_ATTEMPTS = 120;
 
 const ERROR_MESSAGES: Record<string, string> = {
   INVITED_GUEST_REQUIRED: "Silakan pilih nama Anda dari daftar tamu undangan.",
@@ -41,31 +44,61 @@ function readField(formData: FormData, key: string): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function maskStoredPhone(raw: string | null | undefined): string | null {
+  const digits = normalizePhone(raw ?? "");
+  if (!digits) return null;
+  // Show in local form (08xx) like people write it.
+  return maskPhone(digits.startsWith("62") ? `0${digits.slice(2)}` : digits);
+}
+
 /**
- * Stored WhatsApp number (to pre-fill) and a masked email hint for the guest
- * picked in the check-in form. The guest reviews and can correct them; panitia
- * verify identity in person at the entrance. Rate-limited per IP since guest
- * ids are visible in the public search; only returns data for guests who
- * haven't checked in yet.
+ * Read-only details shown under the selected name in the check-in form.
+ * WhatsApp/email are masked; nothing here is editable by the guest, and panitia
+ * verify identity at the door. Rate-limited per IP since ids are visible in
+ * the public search.
  */
-export async function getGuestPrefill(guestId: string): Promise<GuestPrefill | null> {
-  if (!UUID_PATTERN.test(guestId)) return null;
+export async function getGuestInfo(
+  id: string,
+  source: "invited" | "representative",
+): Promise<GuestInfo | null> {
+  if (!UUID_PATTERN.test(id)) return null;
 
   const ip = await clientIp();
-  if (isRateLimited(`register-prefill:${ip}`, WINDOW_MS, PREFILL_MAX_ATTEMPTS)) return null;
+  if (isRateLimited(`register-info:${ip}`, WINDOW_MS, INFO_MAX_ATTEMPTS)) return null;
 
   const supabase = createAdminClient();
+
+  if (source === "representative") {
+    const { data } = await supabase
+      .from("participants")
+      .select("jabatan, no_hp, email, masjid_kampus(nama, kota)")
+      .eq("id", id)
+      .eq("registration_type", "representative")
+      .maybeSingle();
+    if (!data) return null;
+    const mk = Array.isArray(data.masjid_kampus) ? data.masjid_kampus[0] : data.masjid_kampus;
+    return {
+      kampus: mk?.nama ?? "",
+      kalangan: data.jabatan ?? "",
+      kota: mk?.kota && mk.kota !== "N/A" ? mk.kota : null,
+      noHpMasked: maskStoredPhone(data.no_hp),
+      emailMasked: data.email ? maskEmail(data.email) : null,
+    };
+  }
+
   const { data: guest } = await supabase
     .from("invited_guests")
-    .select("contact, is_claimed")
-    .eq("id", guestId)
+    .select("campus_name, title, kota, contact")
+    .eq("id", id)
     .maybeSingle();
-
-  if (!guest || guest.is_claimed) return null;
+  if (!guest) return null;
 
   const { phone, email } = parseGuestContact(guest.contact);
   return {
-    noHp: phone || null,
+    kampus: guest.campus_name,
+    kalangan: guest.title,
+    kota: guest.kota || null,
+    noHpMasked: maskStoredPhone(phone),
     emailMasked: email ? maskEmail(email) : null,
   };
 }
@@ -86,7 +119,7 @@ export async function registerParticipant(
   }
 
   const supabase = createAdminClient();
-  const noHp = readField(formData, "noHp");
+  let noHp = readField(formData, "noHp");
   let email = readField(formData, "email");
   const invitedGuestId = registrationType === "invited" ? readField(formData, "invitedGuestId") : null;
 
@@ -102,14 +135,22 @@ export async function registerParticipant(
       .maybeSingle();
     const stored = parseGuestContact(guest?.contact);
 
-    // Email is optional; if left blank, keep the one panitia already has.
-    email = email ?? (stored.email || null);
+    // WhatsApp/email are not typed at check-in: the number panitia hold is the
+    // participant's identity, and fixes go through panitia in /admin.
+    if (!stored.phone) {
+      return {
+        status: "error",
+        message: "Nomor WhatsApp Anda belum tercatat. Silakan hubungi panitia untuk konfirmasi kehadiran.",
+      };
+    }
+    noHp = stored.phone;
+    email = stored.email || null;
   }
 
   // Kategori is no longer a self-service choice — every registrant starts as
   // peserta_penuh and panitia curates the real category (incl. downgrading
   // to peninjau) when approving in /admin.
-  const { data: participant, error } = await supabase.rpc("register_participant", {
+  const { error } = await supabase.rpc("register_participant", {
     p_registration_type: registrationType,
     p_invited_guest_id: invitedGuestId,
     p_nama_lengkap: readField(formData, "namaLengkap"),
@@ -133,17 +174,6 @@ export async function registerParticipant(
       status: "error",
       message: ERROR_MESSAGES[error.message] ?? "Terjadi kesalahan, silakan coba lagi.",
     };
-  }
-
-  // Keep Tamu Undangan's contact in step with what the guest confirmed (e.g.
-  // an email they filled in). Best-effort: the check-in already succeeded.
-  if (registrationType === "invited" && participant && invitedGuestId) {
-    const contact = participant.email ? `${participant.no_hp} / ${participant.email}` : participant.no_hp;
-    const { error: syncError } = await supabase
-      .from("invited_guests")
-      .update({ contact })
-      .eq("id", invitedGuestId);
-    if (syncError) console.error("invited_guests contact sync failed:", syncError.message);
   }
 
   return { status: "success" };

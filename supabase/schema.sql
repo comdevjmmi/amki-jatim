@@ -22,6 +22,7 @@ create table invited_guests (
   campus_name text not null,
   title text not null,
   contact text,
+  kota text,
   is_claimed boolean not null default false,
   claimed_at timestamptz,
   created_at timestamptz not null default now()

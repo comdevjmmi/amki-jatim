@@ -24,6 +24,7 @@ export async function updateInvitedGuest(formData: FormData): Promise<GuestActio
   const campusName = readField(formData, "campusName");
   const title = readField(formData, "title");
   const contact = readField(formData, "contact");
+  const kota = readField(formData, "kota");
 
   if (!id) return { status: "error", message: "Data tamu tidak valid." };
   if (!fullName || !campusName) return { status: "error", message: "Nama dan kampus wajib diisi." };
@@ -34,7 +35,7 @@ export async function updateInvitedGuest(formData: FormData): Promise<GuestActio
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("invited_guests")
-    .update({ full_name: fullName, campus_name: campusName, title, contact })
+    .update({ full_name: fullName, campus_name: campusName, title, contact, kota })
     .eq("id", id);
 
   if (error) return { status: "error", message: error.message };
@@ -91,6 +92,7 @@ export async function createInvitedGuest(formData: FormData): Promise<GuestActio
   const campusName = readField(formData, "campusName");
   const title = readField(formData, "title");
   const contact = readField(formData, "contact");
+  const kota = readField(formData, "kota");
 
   if (!fullName || !campusName) return { status: "error", message: "Nama dan kampus wajib diisi." };
   if (title !== "Dosen" && title !== "Mahasiswa") {
@@ -115,7 +117,7 @@ export async function createInvitedGuest(formData: FormData): Promise<GuestActio
 
   const { error } = await supabase
     .from("invited_guests")
-    .insert({ full_name: fullName, campus_name: campusName, title, contact });
+    .insert({ full_name: fullName, campus_name: campusName, title, contact, kota });
   if (error) return { status: "error", message: error.message };
 
   revalidatePath("/admin/invited-guests");

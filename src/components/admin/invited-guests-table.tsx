@@ -9,6 +9,7 @@ export interface InvitedGuestTableRow {
   campus_name: string;
   title: string;
   contact: string | null;
+  kota: string | null;
   is_claimed: boolean;
   claimed_at: string | null;
 }
@@ -69,6 +70,7 @@ export function InvitedGuestsTable({ guests }: { guests: InvitedGuestTableRow[] 
           <th className="px-4 py-3 font-semibold">Nama</th>
           <th className="px-4 py-3 font-semibold">Kampus</th>
           <th className="px-4 py-3 font-semibold">Kalangan</th>
+          <th className="px-4 py-3 font-semibold">Kota/Kab.</th>
           <th className="px-4 py-3 font-semibold">Kontak</th>
           <th className="px-4 py-3 font-semibold">Kehadiran</th>
           <th className="px-4 py-3 font-semibold">Aksi</th>
@@ -105,6 +107,10 @@ export function InvitedGuestsTable({ guests }: { guests: InvitedGuestTableRow[] 
                         <option value="Dosen">Dosen</option>
                         <option value="Mahasiswa">Mahasiswa</option>
                       </select>
+                    </label>
+                    <label className="flex flex-col gap-1.5 text-sm">
+                      <span className="font-medium text-text">Kota / Kabupaten</span>
+                      <input type="text" name="kota" defaultValue={g.kota ?? ""} className={INPUT_CLASS} />
                     </label>
                     <label className="flex flex-col gap-1.5 text-sm">
                       <span className="font-medium text-text">Kontak</span>
@@ -149,6 +155,7 @@ export function InvitedGuestsTable({ guests }: { guests: InvitedGuestTableRow[] 
               </td>
               <td className="px-4 py-3 text-text-muted">{g.campus_name}</td>
               <td className="px-4 py-3 text-text-muted">{g.title}</td>
+              <td className="px-4 py-3 text-text-muted">{g.kota ?? "-"}</td>
               <td className="px-4 py-3 text-text-muted">{g.contact ?? "-"}</td>
               <td className="px-4 py-3">
                 {g.is_claimed ? (

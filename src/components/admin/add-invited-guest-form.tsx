@@ -59,6 +59,10 @@ export function AddInvitedGuestForm() {
         </select>
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-text">Kota / Kabupaten (opsional)</span>
+        <input type="text" name="kota" placeholder="Kota Malang" className={INPUT_CLASS} />
+      </label>
+      <label className="flex flex-col gap-1.5 text-sm">
         <span className="font-medium text-text">Kontak (opsional)</span>
         <input type="text" name="contact" placeholder="08xx / email" className={INPUT_CLASS} />
       </label>

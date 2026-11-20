@@ -15,6 +15,7 @@ export interface InvitedGuestOption {
   title: string;
   isPresent: boolean;
   presentAt: string | null;
+  source: "invited" | "representative";
 }
 
 export interface Candidate {
